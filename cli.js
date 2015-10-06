@@ -6,7 +6,10 @@ angular.module('cli').run(function($cli) {
 		if (!commandObject.input) return commandObject;
 
 		var word = commandObject.input.match(/^\w+/);
-		if (Object.keys($cli.workers.commands).indexOf(word && word[0]) !== -1) commandObject.command = word[0];
+		if (Object.keys($cli.workers.commands).indexOf(word && word[0]) !== -1) {
+			commandObject.command = word[0];
+			commandObject.input = commandObject.input.replace(word[0], '');
+		}
 
 		console.log('argv', commandObject.command);
 
@@ -14,7 +17,7 @@ angular.module('cli').run(function($cli) {
 	});
 });
 
-angular.module("cli").run(["$templateCache", function($templateCache) {$templateCache.put("/panel.html","<div class=\"cli\">\n	<style>\n		.panel {\n			height: 64%;\n			position: absolute;\n			top: 0;\n			left: 0;\n			right: 0;\n			color: white;\n			font: 16px monospace;\n			background: rgba(0, 0, 0, 0.8);\n			line-height: 20px;\n		}\n		.buffer {\n			overflow: auto;\n			white-space: pre-line;\n			position: absolute;\n			bottom: 20px;\n		}\n		.line {\n			position: absolute;\n			bottom: 0;\n			height: 20px;\n		}\n		.command {\n			background: none;\n			border: 0;\n			color: white;\n			outline: none;\n			font: 16px monospace;\n		}\n	</style>\n\n	<div class=\"panel\" ng-show=\"show\" ng-click=\"focus()\">\n		<div class=\"buffer\">{{buffer}}<span class=\"loader\" ng-show=\"loading\"></span></div>\n		<div class=\"line\">\n			<span class=\"prompt\">&gt;</span>\n			<input type=\"text\" class=\"command\" ng-model=\"command\" autofocus=\"autofocus\"/>\n		</div>\n	</div>\n</div>");}]);
+angular.module("cli").run(["$templateCache", function($templateCache) {$templateCache.put("/panel.html","<div class=\"cli\">\n	<style>\n		.panel {\n			height: 64%;\n			position: absolute;\n			top: 0;\n			left: 0;\n			right: 0;\n			color: white;\n			font: 16px monospace;\n			background: rgba(0, 0, 0, 0.8);\n			line-height: 20px;\n		}\n		.buffer {\n			overflow: auto;\n			white-space: pre-line;\n			position: absolute;\n			bottom: 20px;\n		}\n		.line {\n			position: absolute;\n			bottom: 0;\n			height: 20px;\n		}\n		.command {\n			background: none;\n			border: 0;\n			color: white;\n			outline: none;\n			font: 16px monospace;\n		}\n	</style>\n\n	<div class=\"panel\" ng-show=\"show\" ng-click=\"focus()\">\n		<div class=\"buffer\">{{buffer}}<span class=\"loader\" ng-show=\"loading\"></span></div>\n		<div class=\"line\">\n			<span class=\"prompt\">{{prompt}}</span>\n			<input type=\"text\" class=\"command\" ng-model=\"command\" autofocus=\"autofocus\"/>\n		</div>\n	</div>\n</div>");}]);
 
 angular.module('cli').run(function() {
 	var panel = angular.element('<ng-cli></ng-cli>');
@@ -22,20 +25,29 @@ angular.module('cli').run(function() {
 });
 
 angular.module('cli').run(function($cli) {
-	$cli.command('help', 'Display this list of available commands', function(commandObject) {
+	$cli.command('help', 'Display this list', function(commandObject) {
+		$cli.print('List of available commands:');
+		Object.keys($cli.workers.commands)
+			.sort()
+			.forEach(function(command) {
+				var descr = $cli.workers.commands[command].description;
+				$cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
+			});
+
 		console.log('in help', commandObject);
 	});
 	//console.log( 'help', angular.mode('cli')._invokeQueue );
 });
 
 angular.module('cli').service('$cli', function($q) {
+	this.prompt = '> ';
+	this.buffer = '';
 	this.workers = {
 		pre: [],
 		commands: {},
 		post: []
 	};
 
-	this.buffer = '';
 	this.print = function(string) {
 		this.buffer += string + '\n';
 	}.bind(this);
@@ -108,7 +120,19 @@ angular.module('cli').service('$cli', function($q) {
 	return this
 });
 
+angular.module('cli').run(function($cli) {
+	function calc(string) {
+		return eval(string);
+	}
 
+	$cli.postprocessor('calc', 'Calculate input', function(commandObject) {
+		if (!commandObject.input) return commandObject;
+
+		$cli.print(calc(commandObject.input));
+
+		return commandObject
+	});
+});
 
 angular.module('cli').directive('ngCli', function($timeout) {
 	return {
@@ -120,8 +144,9 @@ angular.module('cli').directive('ngCli', function($timeout) {
 			var superPrint = $cli.print;
 			$cli.print = function(string) {
 				superPrint(string);
-				$scope.buffer = $cli.buffer;
+				$scope.buffer = $cli.buffer.replace(/\t/g, '    ').replace(/  /g, '  ');
 			};
+			$scope.prompt = $cli.prompt;
 
 			var commandInput = document.querySelector('.cli .panel .line .command');
 			var buffer = document.querySelector('.cli .panel .buffer');
@@ -152,7 +177,7 @@ angular.module('cli').directive('ngCli', function($timeout) {
 					if ($scope.show) $scope.focus();
 				}
 				else if (e.keyCode === 13 && e.target === commandInput) {
-					$cli.print($scope.command);
+					$cli.print($cli.prompt + $scope.command);
 					$cli.run($scope.command);
 
 					buffer.scrollTop = buffer.scrollHeight;
