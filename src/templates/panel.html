@@ -1,9 +1,24 @@
-<div class="panel">
-	<div class="buffer">
-		<span class="loader"></span>
-	</div>
-	<div class="line">
-		<span class="prompt"></span>
-		<input type="text" class="command"/>
+<div>
+	<style>
+		.panel {
+			height: 33%;
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			color: white;
+			font: 16px monospace;
+			background: rgba(0, 0, 0, 0.6);
+		}
+	</style>
+
+	<div class="panel" ng-show="show">
+		<div class="buffer">
+			<span class="loader"></span>
+		</div>
+		<div class="line">
+			<span class="prompt">&gt;</span>
+			<input type="text" class="command"/>
+		</div>
 	</div>
 </div>

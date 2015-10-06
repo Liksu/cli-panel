@@ -5,7 +5,7 @@ var concat = require('gulp-concat');
 var merge = require('merge-stream');
 
 var config = {
-	templates: ['src/templates/*.html', 'src/templates/*.css'],
+	templates: ['src/templates/*.html'],
 	core: [
 		'src/cli.js',
 		'src/cli.runner.js',
@@ -26,12 +26,12 @@ gulp.task('build', function() {
 		.pipe(plumber())
 		.pipe(templateCache({
 			root: '/',
-			standalone: true
+			module: 'cli'
 		}))
 		.pipe(plumber());
 
 	return merge(core, addons, templates)
-		.pipe(concat('cli.js'))
+		.pipe(concat('cli.js', {newLine: '\n\n'}))
 		.pipe(gulp.dest('.'))
 });
 
