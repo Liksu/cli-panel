@@ -34,10 +34,10 @@ angular.module('cli').directive('ngCli', function($timeout) {
 				}, 0);
 			};
 
-			document.addEventListener('keyup', function(e) {
+			document.addEventListener('keydown', function(e) {
 				if (e.keyCode === 192) {
+					if (e.target.nodeName === 'INPUT' && e.target !== commandInput) return;
 					$scope.show = !$scope.show;
-					if (e.target === commandInput) $scope.command = $scope.command.slice(0, -1);
 					if ($scope.show) $scope.focus();
 				}
 				else if (e.keyCode === 13 && e.target === commandInput) {
