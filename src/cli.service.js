@@ -1,6 +1,7 @@
 angular.module('cli').service('$cli', function($q) {
 	this.prompt = '> ';
 	this.buffer = '';
+	this.history = [];
 	this.workers = {
 		pre: [],
 		commands: {},
@@ -12,6 +13,7 @@ angular.module('cli').service('$cli', function($q) {
 	}.bind(this);
 
 	this.run = function(command) {
+		this.history.push(command);
 		var commandObject = {
 			input: command,
 			original: command,
