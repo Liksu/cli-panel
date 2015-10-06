@@ -7,7 +7,7 @@ angular.module('cli').directive('ngCli', function($timeout) {
 			// dirty hack
 			var superPrint = $cli.print;
 			$cli.print = function(string) {
-				superPrint(string);
+				if (string !== null) superPrint(string);
 				$scope.buffer = $cli.buffer.replace(/\t/g, '    ').replace(/  /g, '  ');
 			};
 			$scope.prompt = $cli.prompt;
