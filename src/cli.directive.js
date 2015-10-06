@@ -8,8 +8,9 @@ angular.module('cli').directive('ngCli', function($timeout) {
 			var superPrint = $cli.print;
 			$cli.print = function(string) {
 				superPrint(string);
-				$scope.buffer = $cli.buffer;
+				$scope.buffer = $cli.buffer.replace(/\t/g, '    ').replace(/  /g, '  ');
 			};
+			$scope.prompt = $cli.prompt;
 
 			var commandInput = document.querySelector('.cli .panel .line .command');
 			var buffer = document.querySelector('.cli .panel .buffer');
@@ -40,7 +41,7 @@ angular.module('cli').directive('ngCli', function($timeout) {
 					if ($scope.show) $scope.focus();
 				}
 				else if (e.keyCode === 13 && e.target === commandInput) {
-					$cli.print($scope.command);
+					$cli.print($cli.prompt + $scope.command);
 					$cli.run($scope.command);
 
 					buffer.scrollTop = buffer.scrollHeight;

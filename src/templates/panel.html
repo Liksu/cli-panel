@@ -34,7 +34,7 @@
 	<div class="panel" ng-show="show" ng-click="focus()">
 		<div class="buffer">{{buffer}}<span class="loader" ng-show="loading"></span></div>
 		<div class="line">
-			<span class="prompt">&gt;</span>
+			<span class="prompt">{{prompt}}</span>
 			<input type="text" class="command" ng-model="command" autofocus="autofocus"/>
 		</div>
 	</div>

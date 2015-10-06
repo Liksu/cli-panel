@@ -1,11 +1,12 @@
 angular.module('cli').service('$cli', function($q) {
+	this.prompt = '> ';
+	this.buffer = '';
 	this.workers = {
 		pre: [],
 		commands: {},
 		post: []
 	};
 
-	this.buffer = '';
 	this.print = function(string) {
 		this.buffer += string + '\n';
 	}.bind(this);
