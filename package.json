@@ -1,0 +1,33 @@
+{
+  "name": "cli4ng",
+  "version": "0.0.1",
+  "description": "Command line interface for angular sites",
+  "main": "cli.js",
+  "dependencies": {
+    "del": "^2.0.2",
+    "gulp": "^3.9.0",
+    "gulp-angular-templatecache": "^1.7.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-plumber": "^1.0.1",
+    "merge-stream": "^1.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Liksu/ng-cli.git"
+  },
+  "keywords": [
+    "cli",
+    "console",
+    "angular"
+  ],
+  "author": "Liksu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Liksu/ng-cli/issues"
+  },
+  "homepage": "https://github.com/Liksu/ng-cli#readme"
+}
