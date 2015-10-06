@@ -14,7 +14,7 @@ angular.module('cli').run(function($cli) {
 	});
 });
 
-angular.module("cli").run(["$templateCache", function($templateCache) {$templateCache.put("/panel.html","<div class=\"cli\">\n	<style>\n		.panel {\n			height: 64%;\n			position: absolute;\n			top: 0;\n			left: 0;\n			right: 0;\n			color: white;\n			font: 16px monospace;\n			background: rgba(0, 0, 0, 0.6);\n		}\n	</style>\n\n	<div class=\"panel\" ng-show=\"show\">\n		<div class=\"buffer\">\n			<span class=\"loader\"></span>\n		</div>\n		<div class=\"line\">\n			<span class=\"prompt\">&gt;</span>\n			<input type=\"text\" class=\"command\" ng-model=\"command\"/>\n		</div>\n	</div>\n</div>");}]);
+angular.module("cli").run(["$templateCache", function($templateCache) {$templateCache.put("/panel.html","<div class=\"cli\">\n	<style>\n		.panel {\n			height: 64%;\n			position: absolute;\n			top: 0;\n			left: 0;\n			right: 0;\n			color: white;\n			font: 16px monospace;\n			background: rgba(0, 0, 0, 0.8);\n			line-height: 20px;\n		}\n		.buffer {\n			overflow: auto;\n			white-space: pre-line;\n			position: absolute;\n			bottom: 20px;\n		}\n		.line {\n			position: absolute;\n			bottom: 0;\n			height: 20px;\n		}\n		.command {\n			background: none;\n			border: 0;\n			color: white;\n			outline: none;\n			font: 16px monospace;\n		}\n	</style>\n\n	<div class=\"panel\" ng-show=\"show\" ng-click=\"focus()\">\n		<div class=\"buffer\">{{buffer}}<span class=\"loader\" ng-show=\"loading\"></span></div>\n		<div class=\"line\">\n			<span class=\"prompt\">&gt;</span>\n			<input type=\"text\" class=\"command\" ng-model=\"command\" autofocus=\"autofocus\"/>\n		</div>\n	</div>\n</div>");}]);
 
 angular.module('cli').run(function() {
 	var panel = angular.element('<ng-cli></ng-cli>');
@@ -34,6 +34,11 @@ angular.module('cli').service('$cli', function($q) {
 		commands: {},
 		post: []
 	};
+
+	this.buffer = '';
+	this.print = function(string) {
+		this.buffer += string + '\n';
+	}.bind(this);
 
 	this.run = function(command) {
 		var commandObject = {
@@ -105,22 +110,56 @@ angular.module('cli').service('$cli', function($q) {
 
 
 
-angular.module('cli').directive('ngCli', function() {
+angular.module('cli').directive('ngCli', function($timeout) {
 	return {
 		templateUrl: '/panel.html',
 		replace: true,
 		controller: function($scope, $cli) {
 			$scope.show = true;
+			// dirty hack
+			var superPrint = $cli.print;
+			$cli.print = function(string) {
+				superPrint(string);
+				$scope.buffer = $cli.buffer;
+			};
 
 			var commandInput = document.querySelector('.cli .panel .line .command');
+			var buffer = document.querySelector('.cli .panel .buffer');
+
+			$scope.focus = function() {
+				$timeout(function() {
+					var len = commandInput.value.length;
+					if(commandInput.setSelectionRange){
+						commandInput.setSelectionRange(len, len);
+					} else if (typeof commandInput.selectionStart == "number") {
+						commandInput.selectionStart = commandInput.selectionEnd = len;
+					} else if (typeof commandInput.createTextRange != "undefined") {
+						commandInput.focus();
+						var range = commandInput.createTextRange();
+						range.collapse(true);
+						range.moveEnd(len);
+						range.moveStart(len);
+						range.select();
+					}
+					commandInput.focus();
+				}, 0);
+			};
+
 			document.addEventListener('keyup', function(e) {
 				if (e.keyCode === 192) {
 					$scope.show = !$scope.show;
-					$scope.$apply();
-				} else if (e.keyCode === 13 && e.target === commandInput) {
+					if (e.target === commandInput) $scope.command = $scope.command.slice(0, -1);
+					if ($scope.show) $scope.focus();
+				}
+				else if (e.keyCode === 13 && e.target === commandInput) {
+					$cli.print($scope.command);
 					$cli.run($scope.command);
+
+					buffer.scrollTop = buffer.scrollHeight;
 					$scope.command = '';
 				}
+
+				$scope.$apply();
 			});
 
 			//TODO: buffer

@@ -8,17 +8,34 @@
 			right: 0;
 			color: white;
 			font: 16px monospace;
-			background: rgba(0, 0, 0, 0.6);
+			background: rgba(0, 0, 0, 0.8);
+			line-height: 20px;
+		}
+		.buffer {
+			overflow: auto;
+			white-space: pre-line;
+			position: absolute;
+			bottom: 20px;
+		}
+		.line {
+			position: absolute;
+			bottom: 0;
+			height: 20px;
+		}
+		.command {
+			background: none;
+			border: 0;
+			color: white;
+			outline: none;
+			font: 16px monospace;
 		}
 	</style>
 
-	<div class="panel" ng-show="show">
-		<div class="buffer">
-			<span class="loader"></span>
-		</div>
+	<div class="panel" ng-show="show" ng-click="focus()">
+		<div class="buffer">{{buffer}}<span class="loader" ng-show="loading"></span></div>
 		<div class="line">
 			<span class="prompt">&gt;</span>
-			<input type="text" class="command" ng-model="command"/>
+			<input type="text" class="command" ng-model="command" autofocus="autofocus"/>
 		</div>
 	</div>
 </div>

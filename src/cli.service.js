@@ -5,6 +5,11 @@ angular.module('cli').service('$cli', function($q) {
 		post: []
 	};
 
+	this.buffer = '';
+	this.print = function(string) {
+		this.buffer += string + '\n';
+	}.bind(this);
+
 	this.run = function(command) {
 		var commandObject = {
 			input: command,
