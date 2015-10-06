@@ -14,7 +14,7 @@ var config = {
 	],
 	addons: [
 		'src/preprocessors/argv.js',
-		'src/commands/help.js',
+		'src/commands/*.js',
 		'src/postprocessors/calc.js'
 	]
 };

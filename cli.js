@@ -25,23 +25,15 @@ angular.module('cli').run(function() {
 });
 
 angular.module('cli').run(function($cli) {
-	$cli.command('help', 'Display this list', function(commandObject) {
-		$cli.print('List of available commands:');
-		Object.keys($cli.workers.commands)
-			.sort()
-			.forEach(function(command) {
-				var descr = $cli.workers.commands[command].description;
-				$cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
-			});
-
-		console.log('in help', commandObject);
+	$cli.command('clear', 'Clear screen', function(commandObject) {
+		$cli.buffer = '';
 	});
-	//console.log( 'help', angular.mode('cli')._invokeQueue );
 });
 
 angular.module('cli').service('$cli', function($q) {
 	this.prompt = '> ';
 	this.buffer = '';
+	this.history = [];
 	this.workers = {
 		pre: [],
 		commands: {},
@@ -53,6 +45,7 @@ angular.module('cli').service('$cli', function($q) {
 	}.bind(this);
 
 	this.run = function(command) {
+		this.history.push(command);
 		var commandObject = {
 			input: command,
 			original: command,
@@ -121,17 +114,18 @@ angular.module('cli').service('$cli', function($q) {
 });
 
 angular.module('cli').run(function($cli) {
-	function calc(string) {
-		return eval(string);
-	}
+	$cli.command('help', 'Display this list', function(commandObject) {
+		$cli.print('List of available commands:');
+		Object.keys($cli.workers.commands)
+			.sort()
+			.forEach(function(command) {
+				var descr = $cli.workers.commands[command].description;
+				$cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
+			});
 
-	$cli.postprocessor('calc', 'Calculate input', function(commandObject) {
-		if (!commandObject.input) return commandObject;
-
-		$cli.print(calc(commandObject.input));
-
-		return commandObject
+		console.log('in help', commandObject);
 	});
+	//console.log( 'help', angular.mode('cli')._invokeQueue );
 });
 
 angular.module('cli').directive('ngCli', function($timeout) {
@@ -193,4 +187,18 @@ angular.module('cli').directive('ngCli', function($timeout) {
 			//TODO: styling
 		}
 	}
+});
+
+angular.module('cli').run(function($cli) {
+	function calc(string) {
+		return eval(string);
+	}
+
+	$cli.postprocessor('calc', 'Calculate input', function(commandObject) {
+		if (!commandObject.input) return commandObject;
+
+		$cli.print(calc(commandObject.input));
+
+		return commandObject
+	});
 });
