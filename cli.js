@@ -27,6 +27,7 @@ angular.module('cli').run(function() {
 angular.module('cli').run(function($cli) {
 	$cli.command('clear', 'Clear screen', function(commandObject) {
 		$cli.buffer = '';
+		$cli.print(null);
 	});
 });
 
@@ -137,7 +138,7 @@ angular.module('cli').directive('ngCli', function($timeout) {
 			// dirty hack
 			var superPrint = $cli.print;
 			$cli.print = function(string) {
-				superPrint(string);
+				if (string !== null) superPrint(string);
 				$scope.buffer = $cli.buffer.replace(/\t/g, '    ').replace(/  /g, '  ');
 			};
 			$scope.prompt = $cli.prompt;

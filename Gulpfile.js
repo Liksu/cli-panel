@@ -3,6 +3,8 @@ var plumber = require('gulp-plumber');
 var templateCache = require('gulp-angular-templatecache');
 var concat = require('gulp-concat');
 var merge = require('merge-stream');
+var uglify = require('gulp-uglify');
+var rename = require("gulp-rename");
 
 var config = {
 	templates: ['src/templates/*.html'],
@@ -32,6 +34,9 @@ gulp.task('build', function() {
 
 	return merge(core, addons, templates)
 		.pipe(concat('cli.js', {newLine: '\n\n'}))
+		.pipe(gulp.dest('.'))
+		.pipe(uglify())
+		.pipe(rename('cli.min.js'))
 		.pipe(gulp.dest('.'))
 });
 
