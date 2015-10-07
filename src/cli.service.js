@@ -21,16 +21,14 @@ angular.module('cli').service('$cli', function($q) {
 			argv: {},
 			result: null
 		};
-		console.log('run', commandObject);
 		// run over all
 		// each step is promise
 		var pipeline = this.workers.pre.reduce(function(pipeline, processor, i) {
-			return $q.when(pipeline).then(function() {console.log('pre', processor, commandObject); return processor.worker(commandObject)});
+			return $q.when(pipeline).then(function() {return processor.worker(commandObject)});
 		}, commandObject);
 
 		pipeline = $q.when(pipeline).then(function() {
 			var command;
-			console.log('check command', commandObject, this.workers.commands);
 			if (commandObject.command && (command = this.workers.commands[commandObject.command])) {
 				return $q
 					.when(command.worker(commandObject))

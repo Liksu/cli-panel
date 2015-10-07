@@ -7,8 +7,6 @@ angular.module('cli').run(function($cli) {
 				var descr = $cli.workers.commands[command].description;
 				$cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
 			});
-
-		console.log('in help', commandObject);
 	});
-	//console.log( 'help', angular.mode('cli')._invokeQueue );
+	//console.log( 'help', angular.module('cli')._invokeQueue );
 });

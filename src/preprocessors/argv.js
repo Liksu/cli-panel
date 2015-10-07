@@ -8,8 +8,6 @@ angular.module('cli').run(function($cli) {
 			commandObject.input = commandObject.input.replace(word[0], '');
 		}
 
-		console.log('argv', commandObject.command);
-
 		return commandObject
 	});
 });
