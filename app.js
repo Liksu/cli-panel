@@ -1,4 +1,4 @@
-console.log('app!');
+console.log('app!', angular.module('cli'));
 angular
 	.module('app', ['cli'])
 	.controller('main', function($scope) {
