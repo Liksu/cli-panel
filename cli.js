@@ -94,7 +94,7 @@ angular.module('cli').directive('ngCli', ["$timeout", function($timeout) {
 		templateUrl: '/panel.html',
 		replace: true,
 		controller: ["$scope", "$cli", function($scope, $cli) {
-			$scope.show = true;
+			$scope.show = false;
 			// dirty hack
 			var superPrint = $cli.print;
 			$cli.print = function(string) {
