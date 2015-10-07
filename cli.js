@@ -6,7 +6,7 @@ angular.module('cli').run(function() {
 	angular.element(document.body).append(panel)
 });
 
-angular.module('cli').service('$cli', function($q) {
+angular.module('cli').service('$cli', ["$q", function($q) {
 	this.prompt = '> ';
 	this.buffer = '';
 	this.history = [];
@@ -87,13 +87,13 @@ angular.module('cli').service('$cli', function($q) {
 	this.postprocessor = store.bind(this, 'post');
 
 	return this
-});
+}]);
 
-angular.module('cli').directive('ngCli', function($timeout) {
+angular.module('cli').directive('ngCli', ["$timeout", function($timeout) {
 	return {
 		templateUrl: '/panel.html',
 		replace: true,
-		controller: function($scope, $cli) {
+		controller: ["$scope", "$cli", function($scope, $cli) {
 			$scope.show = true;
 			// dirty hack
 			var superPrint = $cli.print;
@@ -146,11 +146,11 @@ angular.module('cli').directive('ngCli', function($timeout) {
 			//TODO: loader
 			//TODO: commands history + keys up & down
 			//TODO: styling
-		}
+		}]
 	}
-});
+}]);
 
-angular.module('cli').run(function($cli) {
+angular.module('cli').run(["$cli", function($cli) {
 	$cli.preprocessor('argv', 'Split command line to arguments', function(commandObject) {
 		if (!commandObject.input) return commandObject;
 
@@ -164,16 +164,16 @@ angular.module('cli').run(function($cli) {
 
 		return commandObject
 	});
-});
+}]);
 
-angular.module('cli').run(function($cli) {
+angular.module('cli').run(["$cli", function($cli) {
 	$cli.command('clear', 'Clear screen', function(commandObject) {
 		$cli.buffer = '';
 		$cli.print(null);
 	});
-});
+}]);
 
-angular.module('cli').run(function($cli) {
+angular.module('cli').run(["$cli", function($cli) {
 	$cli.command('help', 'Display this list', function(commandObject) {
 		$cli.print('List of available commands:');
 		Object.keys($cli.workers.commands)
@@ -186,9 +186,9 @@ angular.module('cli').run(function($cli) {
 		console.log('in help', commandObject);
 	});
 	//console.log( 'help', angular.mode('cli')._invokeQueue );
-});
+}]);
 
-angular.module('cli').run(function($cli) {
+angular.module('cli').run(["$cli", function($cli) {
 	function calc(string) {
 		return eval(string);
 	}
@@ -200,6 +200,6 @@ angular.module('cli').run(function($cli) {
 
 		return commandObject
 	});
-});
+}]);
 
 angular.module("cli").run(["$templateCache", function($templateCache) {$templateCache.put("/panel.html","<div class=\"cli\">\n	<style>\n		.panel {\n			height: 64%;\n			position: absolute;\n			top: 0;\n			left: 0;\n			right: 0;\n			color: white;\n			font: 16px monospace;\n			background: rgba(0, 0, 0, 0.8);\n			line-height: 20px;\n		}\n		.buffer {\n			overflow: auto;\n			white-space: pre-line;\n			position: absolute;\n			bottom: 20px;\n		}\n		.line {\n			position: absolute;\n			bottom: 0;\n			height: 20px;\n		}\n		.command {\n			background: none;\n			border: 0;\n			color: white;\n			outline: none;\n			font: 16px monospace;\n		}\n	</style>\n\n	<div class=\"panel\" ng-show=\"show\" ng-click=\"focus()\">\n		<div class=\"buffer\">{{buffer}}<span class=\"loader\" ng-show=\"loading\"></span></div>\n		<div class=\"line\">\n			<span class=\"prompt\">{{prompt}}</span>\n			<input type=\"text\" class=\"command\" ng-model=\"command\" autofocus=\"autofocus\"/>\n		</div>\n	</div>\n</div>");}]);

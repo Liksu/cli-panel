@@ -4,6 +4,7 @@ var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var rename = require("gulp-rename");
 var gulpif = require('gulp-if');
+var ngAnnotate = require('gulp-ng-annotate');
 
 var ordered_src = [
 	'src/cli.js',
@@ -18,6 +19,7 @@ var ordered_src = [
 
 gulp.task('build', function() {
 	return gulp.src(ordered_src)
+		.pipe(gulpif(/[.]js$/, ngAnnotate()))
 		.pipe(gulpif(/[.]html$/, templateCache({
 			root: '/',
 			module: 'cli'
