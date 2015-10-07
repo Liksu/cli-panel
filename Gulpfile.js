@@ -1,38 +1,27 @@
 var gulp = require('gulp');
-var plumber = require('gulp-plumber');
 var templateCache = require('gulp-angular-templatecache');
 var concat = require('gulp-concat');
-var merge = require('merge-stream');
 var uglify = require('gulp-uglify');
 var rename = require("gulp-rename");
+var gulpif = require('gulp-if');
 
-var config = {
-	templates: ['src/templates/*.html'],
-	core: [
-		'src/cli.js',
-		'src/cli.runner.js',
-		'src/cli.service.js',
-		'src/cli.directive.js'
-	],
-	addons: [
-		'src/preprocessors/argv.js',
-		'src/commands/*.js',
-		'src/postprocessors/calc.js'
-	]
-};
+var ordered_src = [
+	'src/cli.js',
+	'src/cli.runner.js',
+	'src/cli.service.js',
+	'src/cli.directive.js',
+	'src/preprocessors/argv.js',
+	'src/commands/*.js',
+	'src/postprocessors/calc.js',
+	'src/templates/*.html'
+];
 
 gulp.task('build', function() {
-	var core = gulp.src(config.core).pipe(plumber());
-	var addons = gulp.src(config.addons).pipe(plumber());
-	var templates = gulp.src(config.templates)
-		.pipe(plumber())
-		.pipe(templateCache({
+	return gulp.src(ordered_src)
+		.pipe(gulpif(/[.]html$/, templateCache({
 			root: '/',
 			module: 'cli'
-		}))
-		.pipe(plumber());
-
-	return merge(core, addons, templates)
+		})))
 		.pipe(concat('cli.js', {newLine: '\n\n'}))
 		.pipe(gulp.dest('.'))
 		.pipe(uglify())
