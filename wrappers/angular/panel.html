@@ -1,10 +1,7 @@
 <div class="cli">
 	<style>
-		.cli {
-			max-height: 64%;
-		}
 		.panel {
-			height: 0;
+			height: 64%;
 			position: absolute;
 			top: 0;
 			left: 0;
@@ -13,15 +10,8 @@
 			font: 16px monospace;
 			background: rgba(0, 0, 0, 0.8);
 			line-height: 20px;
-			display: none;
-			transition: height 2.5s linear;
 		}
-		.panel.show {
-			transition: height 2.5s linear;
-			display: block;
-			height: 64%;
-		}
-		.history {
+		.buffer {
 			overflow: auto;
 			white-space: pre-line;
 			position: absolute;
@@ -44,20 +34,13 @@
 			box-sizing: border-box;
 			margin-left: -20px;
 		}
-		.loader {}
-		.hide_element {
-			display: none;
-		}
 	</style>
 
-	<div class="panel show" onclick="focus()">
-		<div class="history">
-			<span class="buffer"></span>
-			<span class="loader hide_element"></span>
-		</div>
+	<div class="panel" ng-show="show" ng-click="focus()">
+		<div class="buffer">{{buffer}}<span class="loader" ng-show="loading"></span></div>
 		<div class="line">
-			<span class="prompt"></span>
-			<input type="text" class="command" autofocus="autofocus"/>
+			<span class="prompt">{{prompt}}</span>
+			<input type="text" class="command" ng-model="command" autofocus="autofocus"/>
 		</div>
 	</div>
 </div>

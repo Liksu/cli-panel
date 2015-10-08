@@ -1,3 +1,9 @@
+/**
+ * cli4ng - Command line interface for angular sites
+ * @version v0.0.2
+ * @link https://github.com/Liksu/ng-cli#readme
+ * @license MIT
+ */
 window.cli = new (function() {
 	/* templates */
 	this.templates = {};
@@ -99,3 +105,5 @@ window.cli = new (function() {
 
 	};
 })();
+
+(function(cli){cli.addHtml("panel.html","<div class=\"cli\">\r\n	<style>\r\n		.cli {\r\n			max-height: 64%;\r\n		}\r\n		.panel {\r\n			height: 0;\r\n			position: absolute;\r\n			top: 0;\r\n			left: 0;\r\n			right: 0;\r\n			color: white;\r\n			font: 16px monospace;\r\n			background: rgba(0, 0, 0, 0.8);\r\n			line-height: 20px;\r\n			display: none;\r\n			transition: height 2.5s linear;\r\n		}\r\n		.panel.show {\r\n			transition: height 2.5s linear;\r\n			display: block;\r\n			height: 64%;\r\n		}\r\n		.history {\r\n			overflow: auto;\r\n			white-space: pre-line;\r\n			position: absolute;\r\n			bottom: 20px;\r\n		}\r\n		.line {\r\n			position: absolute;\r\n			bottom: 0;\r\n			height: 20px;\r\n			width: 100%;\r\n		}\r\n		.command {\r\n			background: none;\r\n			border: 0;\r\n			color: white;\r\n			outline: none;\r\n			font: 16px monospace;\r\n			padding-left: 20px;\r\n			width: 100%;\r\n			box-sizing: border-box;\r\n			margin-left: -20px;\r\n		}\r\n		.loader {}\r\n		.hide_element {\r\n			display: none;\r\n		}\r\n	</style>\r\n\r\n	<div class=\"panel show\" onclick=\"focus()\">\r\n		<div class=\"history\">\r\n			<span class=\"buffer\"></span>\r\n			<span class=\"loader hide_element\"></span>\r\n		</div>\r\n		<div class=\"line\">\r\n			<span class=\"prompt\"></span>\r\n			<input type=\"text\" class=\"command\" autofocus=\"autofocus\"/>\r\n		</div>\r\n	</div>\r\n</div>","body");})(window.cli)

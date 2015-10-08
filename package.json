@@ -1,6 +1,6 @@
 {
   "name": "cli4ng",
-  "version": "0.0.2",
+  "version": "0.1.1",
   "description": "Command line interface for angular sites",
   "main": "cli.js",
   "dependencies": {
@@ -8,6 +8,7 @@
     "gulp-angular-templatecache": "^1.7.0",
     "gulp-concat": "^2.6.0",
     "gulp-connect": "^2.2.0",
+    "gulp-header": "^1.7.1",
     "gulp-if": "^2.0.0",
     "gulp-ng-annotate": "^1.1.0",
     "gulp-rename": "^1.2.2",
