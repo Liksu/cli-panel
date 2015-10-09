@@ -41,12 +41,15 @@ window.cli = new (function() {
 		this.cache.panel = document.querySelector('.cli .panel');
 		this.cache.commandInput = this.cache.panel.querySelector('.line .command');
 		this.cache.buffer = this.cache.panel.querySelector('.buffer');
+
+		this.toggle(this.cache.show);
 	}.bind(this));
 
 	/* keyboard */
 	document.addEventListener('keydown', function(e) {
 		if (e.keyCode === 192) {
 			if (e.target.nodeName === 'INPUT' && e.target !== this.cache.commandInput) return;
+			if (e.target === this.cache.commandInput) e.preventDefault();
 			this.toggle();
 		}
 		else if (e.keyCode === 13 && e.target === this.cache.commandInput) {
@@ -106,4 +109,4 @@ window.cli = new (function() {
 	};
 })();
 
-(function(cli){cli.addHtml("panel.html","<div class=\"cli\">\n	<style>\n		.cli {\n			max-height: 64%;\n		}\n		.panel {\n			height: 0;\n			position: absolute;\n			top: 0;\n			left: 0;\n			right: 0;\n			color: white;\n			font: 16px monospace;\n			background: rgba(0, 0, 0, 0.8);\n			line-height: 20px;\n			transition: height 2.5s linear;\n		}\n		.panel.show {\n			height: 64%;\n		}\n		.history {\n			overflow: auto;\n			white-space: pre-line;\n			position: absolute;\n			bottom: 20px;\n		}\n		.line {\n			position: absolute;\n			bottom: 0;\n			height: 20px;\n			width: 100%;\n		}\n		.command {\n			background: none;\n			border: 0;\n			color: white;\n			outline: none;\n			font: 16px monospace;\n			padding-left: 20px;\n			width: 100%;\n			box-sizing: border-box;\n			margin-left: -20px;\n		}\n		.loader {}\n		.hide_element {\n			display: none;\n		}\n	</style>\n\n	<div class=\"panel show\" onclick=\"focus()\">\n		<div class=\"history\">\n			<span class=\"buffer\"></span>\n			<span class=\"loader hide_element\"></span>\n		</div>\n		<div class=\"line\">\n			<span class=\"prompt\"></span>\n			<input type=\"text\" class=\"command\" autofocus=\"autofocus\"/>\n		</div>\n	</div>\n</div>","body");})(window.cli)
+(function(cli){cli.addHtml("panel.html","<div class=\"cli\">\n	<style>\n		.cli {\n			max-height: 64%;\n		}\n		.panel {\n			height: 0;\n			position: absolute;\n			top: 0;\n			left: 0;\n			right: 0;\n			color: white;\n			font: 16px monospace;\n			background: rgba(0, 0, 0, 0.8);\n			line-height: 20px;\n			transition: height 0.5s ease;\n		}\n		.panel.show {\n			height: 64%;\n		}\n		.history {\n			overflow: auto;\n			white-space: pre-line;\n			position: absolute;\n			bottom: 20px;\n		}\n		.line {\n			position: absolute;\n			bottom: 0;\n			height: 20px;\n			width: 100%;\n		}\n		.command {\n			background: none;\n			border: 0;\n			color: white;\n			outline: none;\n			font: 16px monospace;\n			padding-left: 20px;\n			width: 100%;\n			box-sizing: border-box;\n			margin-left: -20px;\n		}\n		.loader {}\n		.hide_element {\n			display: none;\n		}\n	</style>\n\n	<div class=\"panel show\" onclick=\"focus()\">\n		<div class=\"history\">\n			<span class=\"buffer\"></span>\n			<span class=\"loader hide_element\"></span>\n		</div>\n		<div class=\"line\">\n			<span class=\"prompt\"></span>\n			<input type=\"text\" class=\"command\" autofocus=\"autofocus\"/>\n		</div>\n	</div>\n</div>","body");})(window.cli)
