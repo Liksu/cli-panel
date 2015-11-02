@@ -35,12 +35,15 @@ window.cli = new (function() {
 		this.cache.panel = document.querySelector('.cli .panel');
 		this.cache.commandInput = this.cache.panel.querySelector('.line .command');
 		this.cache.buffer = this.cache.panel.querySelector('.buffer');
+
+		this.toggle(this.cache.show);
 	}.bind(this));
 
 	/* keyboard */
 	document.addEventListener('keydown', function(e) {
 		if (e.keyCode === 192) { // `
 			if (e.target.nodeName === 'INPUT' && e.target !== this.cache.commandInput) return;
+			if (e.target === this.cache.commandInput) e.preventDefault();
 			this.toggle();
 		}
 		else if (e.keyCode === 13 && e.target === this.cache.commandInput) { // enter
