@@ -1,12 +1,24 @@
 window.cli = new (function() {
-	/* templates */
-	this.templates = {};
 	this.cache = {
 		commandInput: null,
 		buffer: null,
 		panel: null,
 		show: false
 	};
+	this.history = [];
+	this.settings = {
+		prompt: '> '
+	};
+	this.workers = {
+		pre: [],
+		commands: {},
+		post: [],
+		keys: {}
+	};
+
+	/* templates */
+
+	this.templates = {};
 
 	this.addHtml = function(name, content, selector) {
 		this.templates[name] = {
@@ -32,7 +44,7 @@ window.cli = new (function() {
 			document.querySelector(selector).appendChild( fragments[selector] );
 		});
 
-		this.cache.panel = document.querySelector('.cli .panel');
+		this.cache.panel = document.querySelector('.cli .cli-panel');
 		this.cache.commandInput = this.cache.panel.querySelector('.line .command');
 		this.cache.buffer = this.cache.panel.querySelector('.buffer');
 
@@ -40,6 +52,7 @@ window.cli = new (function() {
 	}.bind(this));
 
 	/* keyboard */
+
 	document.addEventListener('keydown', function(e) {
 		if (e.keyCode === 192) { // `
 			if (e.target.nodeName === 'INPUT' && e.target !== this.cache.commandInput) return;
@@ -96,9 +109,88 @@ window.cli = new (function() {
 		}, 0);
 	}.bind(this);
 
-	/* service */
+	/* API */
 
-	this.command = function() {
+	this.print = function(string) {
+		this.cache.buffer.innerHTML += string + '\n';
+	}.bind(this);
 
-	};
+	this.run = function(command) {
+		this.history.push(command);
+		var commandObject = {
+			input: command,
+			original: command,
+			command: null,
+			argv: {},
+			result: null
+		};
+		// run over all
+		// each step is promise
+
+		var pipeline = new Promise((resolve, reject) => resolve(commandObject));
+
+		console.log(this.workers.pre);
+
+		//this.workers.pre.forEach(ordered => ordered.forEach(processsor => {
+		//	pipeline = pipeline.then(processsor.worker(commandObject))
+		//}));
+
+		//var pipeline = this.workers.pre.reduce(function(pipeline, processor, i) {
+		//	return $q.when(pipeline).then(function() {return processor.worker(commandObject)});
+		//}, commandObject);
+		//
+		//pipeline = $q.when(pipeline).then(function() {
+		//	var command;
+		//	if (commandObject.command && (command = this.workers.commands[commandObject.command])) {
+		//		return $q
+		//			.when(command.worker(commandObject))
+		//			.then(function(result) {commandObject = result || commandObject});
+		//	}
+		//
+		//	return $q.when(commandObject);
+		//}.bind(this));
+		//
+		//pipeline = $q.when(pipeline).then(function() {
+		//	this.workers.post.reduce(function (pipeline, processor, i) {
+		//		return $q.when(pipeline).then(function () {
+		//			return processor.worker(commandObject)
+		//		});
+		//	}, $q.when(commandObject));
+		//}.bind(this));
+		//
+		//return pipeline.then(function() { return commandObject });
+	}.bind(this);
+
+	/**
+	 *
+	 * @param type
+	 * @param name
+	 * @param [description]
+	 * @param worker
+	 */
+	var store = function store(type, name, description, worker, order) {
+		if (!order) order = 0;
+
+		if (worker === undefined && typeof description === 'function') {
+			worker = description;
+			description = null;
+		}
+
+		var storeObject = {
+			name: name,
+			description: description,
+			worker: worker
+		};
+
+		if (type === 'command' || type === 'keys') this.workers.commands[name] = storeObject;
+		else {
+			if (!this.workers[type][order]) this.workers[type][order] = [];
+			this.workers[type][order].push(storeObject);
+		}
+	}.bind(this);
+
+	this.command = store.bind(this, 'command');
+	this.preprocessor = store.bind(this, 'pre');
+	this.postprocessor = store.bind(this, 'post');
+
 })();

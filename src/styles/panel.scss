@@ -1,7 +1,7 @@
 .cli {
 	max-height: 64%;
 
-	&_panel {
+	&-panel {
 		height: 0;
 		position: absolute;
 		top: 0;
@@ -11,28 +11,28 @@
 		font: 16px monospace;
 		background: rgba(0, 0, 0, 0.8);
 		line-height: 20px;
-		transition: height 2.5s linear;
+		transition: height 0.64s linear;
 	}
 
-	&_panel.show {
+	&-panel.show {
 		height: 64%;
 	}
 
-	&_history {
+	&-history {
 		overflow: auto;
 		white-space: pre-line;
 		position: absolute;
 		bottom: 20px;
 	}
 
-	&_line {
+	&-line {
 		position: absolute;
 		bottom: 0;
 		height: 20px;
 		width: 100%;
 	}
 
-	&_command {
+	&-command {
 		background: none;
 		border: 0;
 		color: white;
@@ -44,10 +44,10 @@
 		margin-left: -20px;
 	}
 
-	&_loader {
+	&-loader {
 	}
 
-	&_hide_element {
+	.hide_element {
 		display: none;
 	}
 }

@@ -13,6 +13,7 @@ var clean = require('gulp-clean');
 var merge = require('merge-stream');
 var size = require('gulp-size');
 var jade = require('gulp-jade');
+var debug = require('gulp-debug');
 
 var pkg = {pkg: require('./package.json')};
 var banner = ['/**',

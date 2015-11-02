@@ -1,18 +1,30 @@
 /**
- * cli4ng - Command line interface for angular sites
- * @version v0.1.1
- * @link https://github.com/Liksu/ng-cli#readme
+ * cli-panel - Command line interface for angular sites
+ * @version v0.1.2
+ * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
 window.cli = new function () {
-	/* templates */
-	this.templates = {};
 	this.cache = {
 		commandInput: null,
 		buffer: null,
 		panel: null,
 		show: false
 	};
+	this.history = [];
+	this.settings = {
+		prompt: '> '
+	};
+	this.workers = {
+		pre: [],
+		commands: {},
+		post: [],
+		keys: {}
+	};
+
+	/* templates */
+
+	this.templates = {};
 
 	this.addHtml = (function (name, content, selector) {
 		this.templates[name] = {
@@ -38,12 +50,13 @@ window.cli = new function () {
 			document.querySelector(selector).appendChild(fragments[selector]);
 		});
 
-		this.cache.panel = document.querySelector('.cli .panel');
+		this.cache.panel = document.querySelector('.cli .cli-panel');
 		this.cache.commandInput = this.cache.panel.querySelector('.line .command');
 		this.cache.buffer = this.cache.panel.querySelector('.buffer');
 	}).bind(this));
 
 	/* keyboard */
+
 	document.addEventListener('keydown', (function (e) {
 		if (e.keyCode === 192) {
 			// `
@@ -97,14 +110,93 @@ window.cli = new function () {
 		}, 0);
 	}).bind(this);
 
-	/* service */
+	/* API */
 
-	this.command = function () {};
+	this.print = (function (string) {
+		this.cache.buffer.innerHTML += string + '\n';
+	}).bind(this);
+
+	this.run = (function (command) {
+		this.history.push(command);
+		var commandObject = {
+			input: command,
+			original: command,
+			command: null,
+			argv: {},
+			result: null
+		};
+		// run over all
+		// each step is promise
+
+		var pipeline = new Promise((resolve, reject) => resolve(commandObject));
+
+		console.log(this.workers.pre);
+
+		//this.workers.pre.forEach(ordered => ordered.forEach(processsor => {
+		//	pipeline = pipeline.then(processsor.worker(commandObject))
+		//}));
+
+		//var pipeline = this.workers.pre.reduce(function(pipeline, processor, i) {
+		//	return $q.when(pipeline).then(function() {return processor.worker(commandObject)});
+		//}, commandObject);
+		//
+		//pipeline = $q.when(pipeline).then(function() {
+		//	var command;
+		//	if (commandObject.command && (command = this.workers.commands[commandObject.command])) {
+		//		return $q
+		//			.when(command.worker(commandObject))
+		//			.then(function(result) {commandObject = result || commandObject});
+		//	}
+		//
+		//	return $q.when(commandObject);
+		//}.bind(this));
+		//
+		//pipeline = $q.when(pipeline).then(function() {
+		//	this.workers.post.reduce(function (pipeline, processor, i) {
+		//		return $q.when(pipeline).then(function () {
+		//			return processor.worker(commandObject)
+		//		});
+		//	}, $q.when(commandObject));
+		//}.bind(this));
+		//
+		//return pipeline.then(function() { return commandObject });
+	}).bind(this);
+
+	/**
+  *
+  * @param type
+  * @param name
+  * @param [description]
+  * @param worker
+  */
+	var store = (function store(type, name, description, worker, order) {
+		if (!order) order = 0;
+
+		if (worker === undefined && typeof description === 'function') {
+			worker = description;
+			description = null;
+		}
+
+		var storeObject = {
+			name: name,
+			description: description,
+			worker: worker
+		};
+
+		if (type === 'command' || type === 'keys') this.workers.commands[name] = storeObject;else {
+			if (!this.workers[type][order]) this.workers[type][order] = [];
+			this.workers[type][order].push(storeObject);
+		}
+	}).bind(this);
+
+	this.command = store.bind(this, 'command');
+	this.preprocessor = store.bind(this, 'pre');
+	this.postprocessor = store.bind(this, 'post');
 }();
 
-(function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli\"><div onclick=\"focus()\" class=\"panel show\"><div class=\"history\"><span class=\"buffer\"></span><span class=\"loader hide_element\"></span></div><div class=\"line\"><span class=\"prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"command\"/></div></div></div>", "body");})(window.cli)
+(function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli\"><div onclick=\"focus()\" class=\"cli-panel show\"><div class=\"cli-history\"><span class=\"cli-buffer\"></span><span class=\"cli-loader hide_element\"></span></div><div class=\"cli-line\"><span class=\"cli-prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"cli-command\"/></div></div></div>", "body");})(window.cli)
 
-!function(){var a=".cli {\n  max-height: 64%; }\n  .cli_panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 2.5s linear; }\n  .cli_panel.show {\n    height: 64%; }\n  .cli_history {\n    overflow: auto;\n    white-space: pre-line;\n    position: absolute;\n    bottom: 20px; }\n  .cli_line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%; }\n  .cli_command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 20px;\n    width: 100%;\n    box-sizing: border-box;\n    margin-left: -20px; }\n  .cli_hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();
+!function(){var a=".cli {\n  max-height: 64%; }\n  .cli-panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 0.64s linear; }\n  .cli-panel.show {\n    height: 64%; }\n  .cli-history {\n    overflow: auto;\n    white-space: pre-line;\n    position: absolute;\n    bottom: 20px; }\n  .cli-line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%; }\n  .cli-command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 20px;\n    width: 100%;\n    box-sizing: border-box;\n    margin-left: -20px; }\n  .cli .hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();
 
 angular.module('cli').run(function ($cli) {
 	$cli.command('clear', 'Clear screen', function (commandObject) {
