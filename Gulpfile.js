@@ -27,14 +27,14 @@ var banner = ['/**',
 var srcCode = function() {
 	return gulp.src(['src/cli.js', 'src/**/*.js'])
 		.pipe(plumber())
-        .pipe(size({showFiles: true}))
+		.pipe(size({showFiles: true}))
 		.pipe(babel())
 };
 
 var srcStyle = function() {
 	return gulp.src(['src/**/*.scss', 'src/**/*.css'])
 		.pipe(plumber())
-        .pipe(size({showFiles: true}))
+		.pipe(size({showFiles: true}))
 		.pipe(gulpif(/\.scss$/, sass().on('error', sass.logError)))
 		.pipe(css2js())
 };
