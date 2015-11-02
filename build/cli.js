@@ -4,7 +4,7 @@
  * @link https://github.com/Liksu/ng-cli#readme
  * @license MIT
  */
-window.cli = new (function() {
+window.cli = new function () {
 	/* templates */
 	this.templates = {};
 	this.cache = {
@@ -14,18 +14,18 @@ window.cli = new (function() {
 		show: false
 	};
 
-	this.addHtml = function(name, content, selector) {
+	this.addHtml = (function (name, content, selector) {
 		this.templates[name] = {
 			html: content,
 			selector: selector || 'body'
 		};
-	}.bind(this);
+	}).bind(this);
 
-	document.addEventListener("DOMContentLoaded", function() {
+	document.addEventListener("DOMContentLoaded", (function () {
 		var templates = this.templates;
 		var fragments = {};
 
-		Object.keys(templates).forEach(function(name) {
+		Object.keys(templates).forEach(function (name) {
 			var selector = templates[name].selector;
 			if (!fragments[selector]) {
 				fragments[selector] = document.createElement('div');
@@ -34,56 +34,54 @@ window.cli = new (function() {
 			fragments[selector].innerHTML += templates[name].html;
 		});
 
-		Object.keys(fragments).forEach(function(selector) {
-			document.querySelector(selector).appendChild( fragments[selector] );
+		Object.keys(fragments).forEach(function (selector) {
+			document.querySelector(selector).appendChild(fragments[selector]);
 		});
 
 		this.cache.panel = document.querySelector('.cli .panel');
 		this.cache.commandInput = this.cache.panel.querySelector('.line .command');
 		this.cache.buffer = this.cache.panel.querySelector('.buffer');
-	}.bind(this));
+	}).bind(this));
 
 	/* keyboard */
-	document.addEventListener('keydown', function(e) {
+	document.addEventListener('keydown', (function (e) {
 		if (e.keyCode === 192) {
+			// `
 			if (e.target.nodeName === 'INPUT' && e.target !== this.cache.commandInput) return;
 			this.toggle();
-		}
-		else if (e.keyCode === 13 && e.target === this.cache.commandInput) {
-			//cli.print(cli.prompt + $scope.command);
-			//cli.run($scope.command);
-			//
-			//buffer.scrollTop = buffer.scrollHeight;
-			//$scope.command = '';
-		}
+		} else if (e.keyCode === 13 && e.target === this.cache.commandInput) {} // enter
+		//cli.print(cli.prompt + $scope.command);
+		//cli.run($scope.command);
+		//
+		//buffer.scrollTop = buffer.scrollHeight;
+		//$scope.command = '';
 
 		//$scope.$apply();
-	}.bind(this));
-
+	}).bind(this));
 
 	/* ui helpers */
 
-	this.show = function() {
+	this.show = (function () {
 		this.cache.panel.className += ' show';
 		this.cache.show = true;
 		this.focus();
-	}.bind(this);
+	}).bind(this);
 
-	this.hide = function() {
+	this.hide = (function () {
 		this.cache.panel.className = this.cache.panel.className.replace(/\s*show/g, '');
 		this.cache.show = false;
-	}.bind(this);
+	}).bind(this);
 
-	this.toggle = function(show){
+	this.toggle = (function (show) {
 		if (show === undefined) show = !this.cache.show;
 		show ? this.show() : this.hide();
-	}.bind(this);
+	}).bind(this);
 
-	this.focus = function() {
+	this.focus = (function () {
 		var input = this.cache.commandInput;
-		setTimeout(function() {
+		setTimeout(function () {
 			var len = input.value.length;
-			if(input.setSelectionRange){
+			if (input.setSelectionRange) {
 				input.setSelectionRange(len, len);
 			} else if (typeof input.selectionStart == "number") {
 				input.selectionStart = input.selectionEnd = len;
@@ -97,13 +95,77 @@ window.cli = new (function() {
 			}
 			input.focus();
 		}, 0);
-	}.bind(this);
+	}).bind(this);
 
 	/* service */
 
-	this.command = function() {
+	this.command = function () {};
+}();
 
-	};
-})();
+(function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli\"><div onclick=\"focus()\" class=\"panel show\"><div class=\"history\"><span class=\"buffer\"></span><span class=\"loader hide_element\"></span></div><div class=\"line\"><span class=\"prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"command\"/></div></div></div>", "body");})(window.cli)
 
-(function(cli){cli.addHtml("panel.html","<div class=\"cli\">\n	<style>\n		.cli {\n			max-height: 64%;\n		}\n		.panel {\n			height: 0;\n			position: absolute;\n			top: 0;\n			left: 0;\n			right: 0;\n			color: white;\n			font: 16px monospace;\n			background: rgba(0, 0, 0, 0.8);\n			line-height: 20px;\n			transition: height 2.5s linear;\n		}\n		.panel.show {\n			height: 64%;\n		}\n		.history {\n			overflow: auto;\n			white-space: pre-line;\n			position: absolute;\n			bottom: 20px;\n		}\n		.line {\n			position: absolute;\n			bottom: 0;\n			height: 20px;\n			width: 100%;\n		}\n		.command {\n			background: none;\n			border: 0;\n			color: white;\n			outline: none;\n			font: 16px monospace;\n			padding-left: 20px;\n			width: 100%;\n			box-sizing: border-box;\n			margin-left: -20px;\n		}\n		.loader {}\n		.hide_element {\n			display: none;\n		}\n	</style>\n\n	<div class=\"panel show\" onclick=\"focus()\">\n		<div class=\"history\">\n			<span class=\"buffer\"></span>\n			<span class=\"loader hide_element\"></span>\n		</div>\n		<div class=\"line\">\n			<span class=\"prompt\"></span>\n			<input type=\"text\" class=\"command\" autofocus=\"autofocus\"/>\n		</div>\n	</div>\n</div>","body");})(window.cli)
+!function(){var a=".cli {\n  max-height: 64%; }\n  .cli_panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 2.5s linear; }\n  .cli_panel.show {\n    height: 64%; }\n  .cli_history {\n    overflow: auto;\n    white-space: pre-line;\n    position: absolute;\n    bottom: 20px; }\n  .cli_line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%; }\n  .cli_command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 20px;\n    width: 100%;\n    box-sizing: border-box;\n    margin-left: -20px; }\n  .cli_hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();
+
+angular.module('cli').run(function ($cli) {
+	$cli.command('clear', 'Clear screen', function (commandObject) {
+		$cli.buffer = '';
+		$cli.print(null);
+	});
+});
+
+angular.module('cli').run(function ($cli) {
+	$cli.command('help', 'Display this list', function (commandObject) {
+		$cli.print('List of available commands:');
+		Object.keys($cli.workers.commands).sort().forEach(function (command) {
+			var descr = $cli.workers.commands[command].description;
+			$cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
+		});
+	});
+	//console.log( 'help', angular.module('cli')._invokeQueue );
+});
+
+angular.module('cli').run(function ($cli) {
+	var services = angular.modules.filter(function (module) {
+		return module !== 'cli';
+	}).reduce(function (list, module) {
+		return list.concat(angular.module(module)._invokeQueue);
+	}, []).filter(function (item) {
+		return item[1] === 'service';
+	}).map(function (item) {
+		return item[2][0];
+	}).forEach(function (service) {
+		//$cli.command(service, )
+	});
+});
+
+
+
+
+
+angular.module('cli').run(function ($cli) {
+	function calc(string) {
+		return eval(string);
+	}
+
+	$cli.postprocessor('calc', 'Calculate input', function (commandObject) {
+		if (!commandObject.input) return commandObject;
+
+		$cli.print(calc(commandObject.input));
+
+		return commandObject;
+	});
+});
+
+angular.module('cli').run(function ($cli) {
+	$cli.preprocessor('argv', 'Split command line to arguments', function (commandObject) {
+		if (!commandObject.input) return commandObject;
+
+		var word = commandObject.input.match(/^\w+/);
+		if (Object.keys($cli.workers.commands).indexOf(word && word[0]) !== -1) {
+			commandObject.command = word[0];
+			commandObject.input = commandObject.input.replace(word[0], '');
+		}
+
+		return commandObject;
+	});
+});

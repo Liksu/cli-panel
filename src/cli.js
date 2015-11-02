@@ -39,11 +39,11 @@ window.cli = new (function() {
 
 	/* keyboard */
 	document.addEventListener('keydown', function(e) {
-		if (e.keyCode === 192) {
+		if (e.keyCode === 192) { // `
 			if (e.target.nodeName === 'INPUT' && e.target !== this.cache.commandInput) return;
 			this.toggle();
 		}
-		else if (e.keyCode === 13 && e.target === this.cache.commandInput) {
+		else if (e.keyCode === 13 && e.target === this.cache.commandInput) { // enter
 			//cli.print(cli.prompt + $scope.command);
 			//cli.run($scope.command);
 			//

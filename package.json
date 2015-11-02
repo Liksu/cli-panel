@@ -1,18 +1,26 @@
 {
-  "name": "cli4ng",
-  "version": "0.1.1",
+  "name": "cli-panel",
+  "version": "0.1.2",
   "description": "Command line interface for angular sites",
-  "main": "cli.js",
+  "main": "build/cli.js",
   "dependencies": {
     "gulp": "^3.9.0",
     "gulp-angular-templatecache": "^1.7.0",
+    "gulp-babel": "^6.0.0",
+    "gulp-clean": "^0.3.1",
     "gulp-concat": "^2.6.0",
     "gulp-connect": "^2.2.0",
+    "gulp-css-to-js": "0.0.1",
     "gulp-header": "^1.7.1",
     "gulp-if": "^2.0.0",
+    "gulp-jade": "^1.1.0",
     "gulp-ng-annotate": "^1.1.0",
+    "gulp-plumber": "^1.0.1",
     "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^1.4.1"
+    "gulp-sass": "^2.1.0",
+    "gulp-size": "^2.0.0",
+    "gulp-uglify": "^1.4.2",
+    "merge-stream": "^1.0.0"
   },
   "devDependencies": {},
   "scripts": {
@@ -20,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Liksu/ng-cli.git"
+    "url": "git+https://github.com/Liksu/cli-panel.git"
   },
   "keywords": [
     "cli",
@@ -30,7 +38,7 @@
   "author": "Liksu",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Liksu/ng-cli/issues"
+    "url": "https://github.com/Liksu/cli-panel/issues"
   },
-  "homepage": "https://github.com/Liksu/ng-cli#readme"
+  "homepage": "http://liksu.github.io/cli-panel/"
 }
