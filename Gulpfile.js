@@ -5,6 +5,8 @@ var uglify = require('gulp-uglify');
 var rename = require("gulp-rename");
 var gulpif = require('gulp-if');
 var header = require('gulp-header');
+var indent = require("gulp-indent");
+var footer = require('gulp-footer');
 var babel = require('gulp-babel');
 var plumber = require('gulp-plumber');
 var sass = require('gulp-sass');
@@ -25,19 +27,25 @@ var banner = ['/**',
 	''].join('\n');
 
 var srcCode = function() {
-	return gulp.src(['src/cli.js', 'src/**/*.js'])
+	var cli = gulp.src('src/cli.js')
 		.pipe(plumber())
 		.pipe(size({showFiles: true}))
-		.pipe(gulpif(/^cli\.js$/, debug(), templateCache({
-			root: '',
-			templateHeader: '(cli => {',
-			templateBody: '\t<%= contents %>',
-			templateFooter: '})(window.cli);'
-		})))
+		.pipe(babel({
+			presets: ['babel-preset-es2015', 'babel-preset-stage-0']
+		}));
+
+	var modules = gulp.src(['!src/cli.js', 'src/**/*.js'])
+		.pipe(plumber())
+		.pipe(size({showFiles: true}))
+		.pipe(header('(cli => {\n'))
+		.pipe(indent({tabs: true, amount: 1}))
+		.pipe(footer('\n})(window.cli);'))
 		.pipe(concat('code.js'))
 		.pipe(babel({
 			presets: ['babel-preset-es2015', 'babel-preset-stage-0']
-		}))
+		}));
+
+	return streamqueue({objectMode: true}, cli, modules);
 };
 
 var srcStyle = function() {
@@ -72,6 +80,7 @@ gulp.task('default', ['clean'], function () {
 			, srcTemplates()
 			, srcStyle()
 		)
+		.pipe(plumber())
 		.pipe(concat('cli.js', {newLine: '\n\n'}))
 		.pipe(header(banner, pkg))
 		.pipe(gulp.dest('build'))

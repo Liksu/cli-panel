@@ -67,14 +67,15 @@ window.cli = new function () {
 			if (e.target.nodeName === 'INPUT' && e.target !== this.cache.commandInput) return;
 			if (e.target === this.cache.commandInput) e.preventDefault();
 			this.toggle();
-		} else if (e.keyCode === 13 && e.target === this.cache.commandInput) {} // enter
-		//cli.print(cli.prompt + $scope.command);
-		//cli.run($scope.command);
-		//
-		//buffer.scrollTop = buffer.scrollHeight;
-		//$scope.command = '';
+		} else if (e.keyCode === 13 && e.target === this.cache.commandInput) {
+			// enter
+			cli.print(cli.settings.prompt + this.cache.commandInput.value);
+			cli.run(this.cache.commandInput.value);
 
-		//$scope.$apply();
+			this.cache.buffer.scrollTop = this.cache.buffer.scrollHeight;
+			this.cache.commandInput.value = '';
+		}
+		//TODO: other keys
 	}).bind(this));
 
 	/* ui helpers */
@@ -118,10 +119,12 @@ window.cli = new function () {
 	/* API */
 
 	this.print = (function (string) {
-		this.cache.buffer.innerHTML += string + '\n';
+		this.cache.buffer.innerHTML += string.replace(/\t/g, '    ') + '\n';
 	}).bind(this);
 
 	this.run = (function (command) {
+		var _this = this;
+
 		this.history.push(command);
 		var commandObject = {
 			input: command,
@@ -137,11 +140,39 @@ window.cli = new function () {
 			return resolve(commandObject);
 		});
 
-		console.log(this.workers.pre);
+		this.workers.pre.forEach(function (ordered) {
+			return ordered.forEach(function (processsor) {
+				//console.log('pre', processsor);
+				pipeline = pipeline.then(function (commandObject) {
+					return processsor.worker(commandObject);
+				});
+			});
+		});
 
-		//this.workers.pre.forEach(ordered => ordered.forEach(processsor => {
-		//	pipeline = pipeline.then(processsor.worker(commandObject))
-		//}));
+		pipeline = pipeline.then(function (commandObject) {
+			return new Promise(function (resolve, reject) {
+				//console.log('command', commandObject);
+				var command;
+				if (commandObject.command && (command = _this.workers.commands[commandObject.command])) {
+					//console.log('run', command);
+					return resolve(command.worker(commandObject)).then(function (result) {
+						return commandObject = result || commandObject;
+					});
+				}
+				return resolve(commandObject);
+			});
+		});
+
+		this.workers.post.forEach(function (ordered) {
+			return ordered.forEach(function (processsor) {
+				//console.log('post', processsor);
+				pipeline = pipeline.then(function (commandObject) {
+					return processsor.worker(commandObject);
+				});
+			});
+		});
+
+		return pipeline;
 
 		//var pipeline = this.workers.pre.reduce(function(pipeline, processor, i) {
 		//	return $q.when(pipeline).then(function() {return processor.worker(commandObject)});
@@ -200,62 +231,87 @@ window.cli = new function () {
 	this.preprocessor = store.bind(this, 'pre');
 	this.postprocessor = store.bind(this, 'post');
 }();
-//angular.module('cli').run(function($cli) {
-//	$cli.command('clear', 'Clear screen', function(commandObject) {
-//		$cli.buffer = '';
-//		$cli.print(null);
-//	});
-//});
-//angular.module('cli').run(function($cli) {
-//	$cli.command('help', 'Display this list', function(commandObject) {
-//		$cli.print('List of available commands:');
-//		Object.keys($cli.workers.commands)
-//			.sort()
-//			.forEach(function(command) {
-//				var descr = $cli.workers.commands[command].description;
-//				$cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
-//			});
-//	});
-//	//console.log( 'help', angular.module('cli')._invokeQueue );
-//});
-//angular.module('cli').run(function($cli) {
-//	var services = angular.modules
-//		.filter(function(module) { return module !== 'cli' })
-//		.reduce(function(list, module) { return list.concat(angular.module(module)._invokeQueue) }, [])
-//		.filter(function(item) { return item[1] === 'service' })
-//		.map(function(item) { return item[2][0] })
-//		.forEach(function(service) {
-//			//$cli.command(service, )
-//		})
-//});
 
-//angular.module('cli').run(function($cli) {
-//	function calc(string) {
-//		return eval(string);
-//	}
-//
-//	$cli.postprocessor('calc', 'Calculate input', function(commandObject) {
-//		if (!commandObject.input) return commandObject;
-//
-//		$cli.print(calc(commandObject.input));
-//
-//		return commandObject
-//	});
-//});
-//angular.module('cli').run(function($cli) {
-//	$cli.preprocessor('argv', 'Split command line to arguments', function(commandObject) {
-//		if (!commandObject.input) return commandObject;
-//
-//		var word = commandObject.input.match(/^\w+/);
-//		if (Object.keys($cli.workers.commands).indexOf(word && word[0]) !== -1) {
-//			commandObject.command = word[0];
-//			commandObject.input = commandObject.input.replace(word[0], '');
-//		}
-//
-//		return commandObject
-//	});
-//});
+'use strict';
+
+(function (cli) {
+	//angular.module('cli').run(function($cli) {
+	//	$cli.command('clear', 'Clear screen', function(commandObject) {
+	//		$cli.buffer = '';
+	//		$cli.print(null);
+	//	});
+	//});
+})(window.cli);
+(function (cli) {
+	cli.command('help', 'Display this list', function (commandObject) {
+		//console.log('in help', commandObject);
+		cli.print('List of available commands:');
+
+		Object.keys(cli.workers.commands).sort().forEach(function (command) {
+			var descr = cli.workers.commands[command].description;
+			cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
+		});
+	});
+})(window.cli);
+(function (cli) {
+	//angular.module('cli').run(function($cli) {
+	//	var services = angular.modules
+	//		.filter(function(module) { return module !== 'cli' })
+	//		.reduce(function(list, module) { return list.concat(angular.module(module)._invokeQueue) }, [])
+	//		.filter(function(item) { return item[1] === 'service' })
+	//		.map(function(item) { return item[2][0] })
+	//		.forEach(function(service) {
+	//			//$cli.command(service, )
+	//		})
+	//});
+})(window.cli);
+(function (cli) {})(window.cli);
+(function (cli) {})(window.cli);
+(function (cli) {
+	//angular.module('cli').run(function($cli) {
+	//	function calc(string) {
+	//		return eval(string);
+	//	}
+	//
+	//	$cli.postprocessor('calc', 'Calculate input', function(commandObject) {
+	//		if (!commandObject.input) return commandObject;
+	//
+	//		$cli.print(calc(commandObject.input));
+	//
+	//		return commandObject
+	//	});
+	//});
+})(window.cli);
+(function (cli) {
+	cli.preprocessor('argv', 'Split command line to arguments', function (commandObject) {
+		if (!commandObject.input) return commandObject;
+
+		var word = commandObject.input.match(/^\w+/);
+		if (Object.keys(cli.workers.commands).indexOf(word && word[0]) !== -1) {
+			commandObject.command = word[0];
+			commandObject.input = commandObject.input.replace(word[0], '');
+			commandObject.argv._ = commandObject.input.replace(/^\s*/, '').replace(/\s*$/, '').split(/\s+/);
+			commandObject.input = '';
+		}
+
+		return commandObject;
+	});
+
+	//angular.module('cli').run(function($cli) {
+	//	$cli.preprocessor('argv', 'Split command line to arguments', function(commandObject) {
+	//		if (!commandObject.input) return commandObject;
+	//
+	//		var word = commandObject.input.match(/^\w+/);
+	//		if (Object.keys($cli.workers.commands).indexOf(word && word[0]) !== -1) {
+	//			commandObject.command = word[0];
+	//			commandObject.input = commandObject.input.replace(word[0], '');
+	//		}
+	//
+	//		return commandObject
+	//	});
+	//});
+})(window.cli);
 
 (function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli\"><div onclick=\"focus()\" class=\"cli-panel show\"><div class=\"cli-history\"><span class=\"cli-buffer\"></span><span class=\"cli-loader hide_element\"></span></div><div class=\"cli-line\"><span class=\"cli-prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"cli-command\"/></div></div></div>", "body");})(window.cli)
 
-!function(){var a=".cli {\n  max-height: 64%; }\n  .cli-panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 0.64s linear; }\n  .cli-panel.show {\n    height: 64%; }\n  .cli-history {\n    overflow: auto;\n    white-space: pre-line;\n    position: absolute;\n    bottom: 20px; }\n  .cli-line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%; }\n  .cli-command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 20px;\n    width: 100%;\n    box-sizing: border-box;\n    margin-left: -20px; }\n  .cli .hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();
+!function(){var a=".cli {\n  max-height: 64%; }\n  .cli-panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 0.64s linear; }\n  .cli-panel.show {\n    height: 64%; }\n  .cli-history {\n    overflow: auto;\n    white-space: pre-wrap;\n    position: absolute;\n    bottom: 20px; }\n  .cli-line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%; }\n  .cli-command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 20px;\n    width: 100%;\n    box-sizing: border-box;\n    margin-left: -20px; }\n  .cli .hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();

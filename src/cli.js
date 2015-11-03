@@ -111,7 +111,7 @@ window.cli = new (function() {
 	/* API */
 
 	this.print = function(string) {
-		this.cache.buffer.innerHTML += string.replace(/\t/g, '    ').replace(/  /g, '  ') + '\n';
+		this.cache.buffer.innerHTML += string.replace(/\t/g, '    ') + '\n';
 	}.bind(this);
 
 	this.run = function(command) {
