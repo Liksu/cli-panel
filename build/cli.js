@@ -15,7 +15,8 @@ window.cli = new function () {
 	};
 	this.history = [];
 	this.settings = {
-		prompt: '> '
+		prompt: '> ',
+		debug: 0
 	};
 	this.workers = {
 		pre: [],
@@ -120,6 +121,16 @@ window.cli = new function () {
 		}, 0);
 	}).bind(this);
 
+	/* stuff */
+
+	this.log = function () {
+		for (var _len = arguments.length, arg = Array(_len), _key = 0; _key < _len; _key++) {
+			arg[_key] = arguments[_key];
+		}
+
+		if (cli.settings.debug) console.log.apply(console, arg);
+	};
+
 	/* API */
 
 	this.print = (function (string) {
@@ -146,22 +157,20 @@ window.cli = new function () {
 
 		this.workers.pre.forEach(function (ordered) {
 			return ordered.forEach(function (processsor) {
-				//console.log('pre', processsor);
+				cli.log('promise pre', processsor);
 				pipeline = pipeline.then(function (commandObject) {
-					return processsor.worker(commandObject);
+					return processsor.worker(commandObject) || commandObject;
 				});
 			});
 		});
 
 		pipeline = pipeline.then(function (commandObject) {
 			return new Promise(function (resolve, reject) {
-				//console.log('command', commandObject);
+				cli.log('promise command', commandObject);
 				var command;
 				if (commandObject.command && (command = _this.workers.commands[commandObject.command])) {
-					//console.log('run', command);
-					return resolve(command.worker(commandObject)).then(function (result) {
-						return commandObject = result || commandObject;
-					});
+					cli.log('promise run command', command);
+					return resolve(command.worker(commandObject) || commandObject);
 				}
 				return resolve(commandObject);
 			});
@@ -169,9 +178,9 @@ window.cli = new function () {
 
 		this.workers.post.forEach(function (ordered) {
 			return ordered.forEach(function (processsor) {
-				//console.log('post', processsor);
+				cli.log('promise post', processsor);
 				pipeline = pipeline.then(function (commandObject) {
-					return processsor.worker(commandObject);
+					return processsor.worker(commandObject) || commandObject;
 				});
 			});
 		});
@@ -186,18 +195,21 @@ window.cli = new function () {
   * @param [description]
   * @param worker
   */
-	var store = (function store(type, name, description, worker, order) {
+	var store = (function store(type, name, description, _worker, order) {
 		if (!order) order = 0;
 
-		if (worker === undefined && typeof description === 'function') {
-			worker = description;
+		if (_worker === undefined && typeof description === 'function') {
+			_worker = description;
 			description = null;
 		}
 
 		var storeObject = {
 			name: name,
 			description: description,
-			worker: worker
+			worker: function worker(e, obj) {
+				cli.log('call worker', type, name);
+				return _worker(e, obj);
+			}
 		};
 
 		if (type === 'command') this.workers.commands[name] = storeObject;else if (type === 'keys') {
@@ -220,22 +232,9 @@ window.cli = new function () {
 function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
 
 (function (cli) {
-	cli.command('clear', 'Clear screen', function (commandObject) {
-		cli.cache.buffer.innerHTML = '';
-	});
-})(window.cli);
-(function (cli) {
-	cli.command('help', 'Display this list', function (commandObject) {
-		cli.print('List of available commands:');
-
-		Object.keys(cli.workers.commands).sort().forEach(function (command) {
-			var descr = cli.workers.commands[command].description;
-			cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
-		});
-	});
-})(window.cli);
-(function (cli) {
 	cli.registerKey(9, 'Tab', function (event, isInCommandLine) {
+		cli.log('process key Tab for autocomplete');
+
 		if (!isInCommandLine) return;
 		event.preventDefault();
 
@@ -261,6 +260,8 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 	}
 
 	cli.registerKey(38, 'Up', function (event, isInCommandLine) {
+		cli.log('process key Up for history');
+
 		if (!isInCommandLine) return;
 		if (historyScroll == cli.history.length) return;
 
@@ -273,6 +274,8 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 	});
 
 	cli.registerKey(40, 'Down', function (event, isInCommandLine) {
+		cli.log('process key Down for history');
+
 		if (!isInCommandLine) return;
 		if (!historyScroll) return;
 
@@ -288,12 +291,16 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 	});
 
 	cli.registerKey(13, 'Enter', function (event, isInCommandLine) {
+		cli.log('process key Enter for history');
+
 		lastCommand = '';
 		historyScroll = 0;
 	});
 })(window.cli);
 (function (cli) {
 	cli.registerKey(13, 'Enter', function (event, isInCommandLine) {
+		cli.log('process key Enter for run');
+
 		if (!isInCommandLine) return;
 
 		cli.print(cli.cache.prompt.outerHTML + cli.cache.commandInput.value);
@@ -305,25 +312,41 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 })(window.cli);
 (function (cli) {
 	cli.registerKey(192, '`', function (event, isInCommandLine) {
-		if (!isInCommandLine) return;else event.preventDefault();
+		cli.log('process key ` for show');
+
+		if (event.target.nodeName === 'INPUT' && !isInCommandLine) return;
+		if (isInCommandLine) event.preventDefault();
 
 		cli.toggle();
 	});
 })(window.cli);
 (function (cli) {
-	//angular.module('cli').run(function($cli) {
-	//	function calc(string) {
-	//		return eval(string);
-	//	}
-	//
-	//	$cli.postprocessor('calc', 'Calculate input', function(commandObject) {
-	//		if (!commandObject.input) return commandObject;
-	//
-	//		$cli.print(calc(commandObject.input));
-	//
-	//		return commandObject
-	//	});
-	//});
+	cli.command('clear', 'Clear screen', function (commandObject) {
+		cli.log('execute command clear');
+		cli.cache.buffer.innerHTML = '';
+	});
+})(window.cli);
+(function (cli) {
+	cli.command('help', 'Display this list', function (commandObject) {
+		cli.log('execute command help');
+		cli.print('List of available commands:');
+
+		Object.keys(cli.workers.commands).sort().forEach(function (command) {
+			var descr = cli.workers.commands[command].description;
+			cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
+		});
+	});
+})(window.cli);
+(function (cli) {
+	cli.postprocessor('calc', 'Simple calculator', function (commandObject) {
+		cli.log('execute POST processor calc');
+
+		if (!commandObject.input) return commandObject;
+
+		console.log('calc', commandObject.input);
+
+		return commandObject;
+	});
 })(window.cli);
 (function (cli) {
 	function parse(str) {
@@ -429,6 +452,8 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 	}
 
 	cli.preprocessor('argv', 'Split command line to arguments', function (commandObject) {
+		cli.log('execute PRE processor argv');
+
 		if (!commandObject.input) return commandObject;
 
 		commandObject.command = null;
@@ -449,7 +474,7 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 			commandObject.input = '';
 		}
 
-		console.log(commandObject);
+		cli.log('argv result', commandObject);
 		return commandObject;
 	});
 })(window.cli);

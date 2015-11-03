@@ -1,4 +1,6 @@
 cli.registerKey(9, 'Tab', (event, isInCommandLine) => {
+	cli.log('process key Tab for autocomplete');
+
 	if (!isInCommandLine) return;
 	event.preventDefault();
 

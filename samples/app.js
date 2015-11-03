@@ -10,8 +10,10 @@ var getList = function() {
 
 // example of self command
 cli.command('books_load', 'App command', function() {
+	cli.log('execute command books_load');
 	return getList().then(function(list) {
-		cli.print(list.map(function(book) { return book.title + ': ' + book.price + '$' }).join(', '))
+		cli.print(list.map(function(book) { return book.title + ': ' + book.price + '$' }).join(', '));
+		cli.log('long books_load finished');
 	})
 });
 

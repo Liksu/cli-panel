@@ -7,6 +7,8 @@ function setCommand(command) {
 }
 
 cli.registerKey(38, 'Up', (event, isInCommandLine) => {
+	cli.log('process key Up for history');
+
 	if (!isInCommandLine) return;
 	if (historyScroll == cli.history.length) return;
 
@@ -19,6 +21,8 @@ cli.registerKey(38, 'Up', (event, isInCommandLine) => {
 });
 
 cli.registerKey(40, 'Down', (event, isInCommandLine) => {
+	cli.log('process key Down for history');
+
 	if (!isInCommandLine) return;
 	if (!historyScroll) return;
 
@@ -35,6 +39,8 @@ cli.registerKey(40, 'Down', (event, isInCommandLine) => {
 });
 
 cli.registerKey(13, 'Enter', (event, isInCommandLine) => {
+	cli.log('process key Enter for history');
+
 	lastCommand = '';
 	historyScroll = 0;
 });

@@ -95,6 +95,8 @@ function parse(str) {
 }
 
 cli.preprocessor('argv', 'Split command line to arguments', commandObject => {
+	cli.log('execute PRE processor argv');
+
 	if (!commandObject.input) return commandObject;
 
 	commandObject.command = null;
@@ -113,6 +115,6 @@ cli.preprocessor('argv', 'Split command line to arguments', commandObject => {
 		commandObject.input = '';
 	}
 
-	console.log(commandObject);
+	cli.log('argv result', commandObject);
 	return commandObject;
 });

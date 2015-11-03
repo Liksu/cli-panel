@@ -1,6 +1,8 @@
 cli.registerKey(192, '`', (event, isInCommandLine) => {
-	if (!isInCommandLine) return;
-	else event.preventDefault();
+	cli.log('process key ` for show');
+
+	if (event.target.nodeName === 'INPUT' && !isInCommandLine) return;
+	if (isInCommandLine) event.preventDefault();
 
 	cli.toggle();
 });

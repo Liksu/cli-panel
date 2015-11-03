@@ -1,4 +1,5 @@
 cli.command('help', 'Display this list', commandObject => {
+	cli.log('execute command help');
 	cli.print('List of available commands:');
 
 	Object.keys(cli.workers.commands)

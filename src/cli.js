@@ -7,7 +7,8 @@ window.cli = new (function() {
 	};
 	this.history = [];
 	this.settings = {
-		prompt: '> '
+		prompt: '> ',
+		debug: 0
 	};
 	this.workers = {
 		pre: [],
@@ -110,6 +111,12 @@ window.cli = new (function() {
 		}, 0);
 	}.bind(this);
 
+	/* stuff */
+
+	this.log = (...arg) => {
+		if (cli.settings.debug) console.log.apply(console, arg);
+	};
+
 	/* API */
 
 	this.print = function(string) {
@@ -131,24 +138,23 @@ window.cli = new (function() {
 		var pipeline = new Promise((resolve, reject) => resolve(commandObject));
 
 		this.workers.pre.forEach(ordered => ordered.forEach(processsor => {
-			//console.log('pre', processsor);
-			pipeline = pipeline.then(commandObject => processsor.worker(commandObject));
+			cli.log('promise pre', processsor);
+			pipeline = pipeline.then(commandObject => processsor.worker(commandObject) || commandObject);
 		}));
 
 		pipeline = pipeline.then(commandObject => new Promise((resolve, reject) => {
-			//console.log('command', commandObject);
+			cli.log('promise command', commandObject);
 			var command;
 			if (commandObject.command && (command = this.workers.commands[commandObject.command])) {
-				//console.log('run', command);
-				return resolve(command.worker(commandObject))
-					.then(result => commandObject = result || commandObject);
+				cli.log('promise run command', command);
+				return resolve(command.worker(commandObject) || commandObject)
 			}
 			return resolve(commandObject);
 		}));
 
 		this.workers.post.forEach(ordered => ordered.forEach(processsor => {
-			//console.log('post', processsor);
-			pipeline = pipeline.then(commandObject => processsor.worker(commandObject));
+			cli.log('promise post', processsor);
+			pipeline = pipeline.then(commandObject => processsor.worker(commandObject) || commandObject);
 		}));
 
 		return pipeline;
@@ -172,7 +178,10 @@ window.cli = new (function() {
 		var storeObject = {
 			name: name,
 			description: description,
-			worker: worker
+			worker(e, obj) {
+				cli.log('call worker', type, name);
+				return worker(e, obj);
+			}
 		};
 
 		if (type === 'command') this.workers.commands[name] = storeObject;
