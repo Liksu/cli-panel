@@ -10,10 +10,10 @@ var plumber = require('gulp-plumber');
 var sass = require('gulp-sass');
 var css2js = require('gulp-css-to-js');
 var clean = require('gulp-clean');
-var merge = require('merge-stream');
 var size = require('gulp-size');
 var jade = require('gulp-jade');
 var debug = require('gulp-debug');
+var streamqueue = require('streamqueue');
 
 var pkg = {pkg: require('./package.json')};
 var banner = ['/**',
@@ -61,7 +61,11 @@ gulp.task('clean', function () {
 });
 
 gulp.task('default', ['clean'], function () {
-	return merge(srcCode(), srcStyle(), srcTemplates())
+	return streamqueue({objectMode: true}
+			, srcCode()
+			, srcTemplates()
+			, srcStyle()
+		)
 		.pipe(concat('cli.js', {newLine: '\n\n'}))
 		.pipe(header(banner, pkg))
 		.pipe(gulp.dest('build'))

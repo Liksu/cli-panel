@@ -45,8 +45,8 @@ window.cli = new (function() {
 		});
 
 		this.cache.panel = document.querySelector('.cli .cli-panel');
-		this.cache.commandInput = this.cache.panel.querySelector('.line .command');
-		this.cache.buffer = this.cache.panel.querySelector('.buffer');
+		this.cache.commandInput = this.cache.panel.querySelector('.cli .cli-line .cli-command');
+		this.cache.buffer = this.cache.panel.querySelector('.cli-buffer');
 
 		this.toggle(this.cache.show);
 	}.bind(this));
