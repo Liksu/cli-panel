@@ -117,9 +117,9 @@ window.cli = new (function() {
 	}.bind(this);
 
 	this.run = function(command) {
-		if (command) this.history.push(command);
+		if (command) this.history.push(command.trim());
 		var commandObject = {
-			input: command,
+			input: command.trim(),
 			original: command,
 			command: null,
 			argv: {},

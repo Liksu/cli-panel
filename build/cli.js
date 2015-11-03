@@ -129,9 +129,9 @@ window.cli = new function () {
 	this.run = (function (command) {
 		var _this = this;
 
-		if (command) this.history.push(command);
+		if (command) this.history.push(command.trim());
 		var commandObject = {
-			input: command,
+			input: command.trim(),
 			original: command,
 			command: null,
 			argv: {},
@@ -234,7 +234,23 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		});
 	});
 })(window.cli);
-(function (cli) {})(window.cli);
+(function (cli) {
+	cli.registerKey(9, 'Tab', function (event, isInCommandLine) {
+		if (!isInCommandLine) return;
+		event.preventDefault();
+
+		var line = cli.cache.commandInput.value;
+		line = new RegExp('^' + line);
+
+		var commands = Object.keys(cli.workers.commands).sort(function (a, b) {
+			return a.length - b.length;
+		}).filter(function (cmd) {
+			return line.test(cmd);
+		});
+
+		if (!commands.length) return;else if (commands.length === 1) cli.cache.commandInput.value = commands[0] + ' ';else cli.print(commands.join('\t'));
+	});
+})(window.cli);
 (function (cli) {
 	var lastCommand = '';
 	var historyScroll = 0;
