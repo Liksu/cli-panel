@@ -57,19 +57,6 @@ window.cli = new (function() {
 
 	document.addEventListener('keydown', function(e) {
 		var isInCommandLine = e.target === this.cache.commandInput;
-		if (e.keyCode === 192) { // `
-			if (!isInCommandLine) return;
-			else e.preventDefault();
-
-			this.toggle();
-		}
-		else if (e.keyCode === 13 && isInCommandLine) { // enter
-			cli.print(cli.cache.prompt.outerHTML + this.cache.commandInput.value);
-			cli.run(this.cache.commandInput.value);
-
-			this.cache.buffer.scrollTop = this.cache.buffer.scrollHeight;
-			this.cache.commandInput.value = '';
-		}
 
 		if (this.workers.keys[e.keyCode]) this.workers.keys[e.keyCode].forEach(stored => stored.worker(e, isInCommandLine));
 		if (this.workers.keys[0]) this.workers.keys[0].forEach(stored => stored.worker(e, isInCommandLine));

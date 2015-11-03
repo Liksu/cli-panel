@@ -4,7 +4,6 @@ var historyScroll = 0;
 function setCommand(command) {
 	cli.cache.commandInput.value = command;
 	cli.focus();
-	console.log(command, cli.history);
 }
 
 cli.registerKey(38, 'Up', (event, isInCommandLine) => {
