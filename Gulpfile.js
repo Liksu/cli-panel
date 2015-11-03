@@ -28,6 +28,12 @@ var srcCode = function() {
 	return gulp.src(['src/cli.js', 'src/**/*.js'])
 		.pipe(plumber())
 		.pipe(size({showFiles: true}))
+		.pipe(gulpif(/^cli\.js$/, debug(), templateCache({
+			root: '',
+			templateHeader: '(cli => {',
+			templateBody: '\t<%= contents %>',
+			templateFooter: '})(window.cli);'
+		})))
 		.pipe(concat('code.js'))
 		.pipe(babel({
 			presets: ['babel-preset-es2015', 'babel-preset-stage-0']

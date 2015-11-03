@@ -60,14 +60,13 @@ window.cli = new (function() {
 			this.toggle();
 		}
 		else if (e.keyCode === 13 && e.target === this.cache.commandInput) { // enter
-			//cli.print(cli.prompt + $scope.command);
-			//cli.run($scope.command);
-			//
-			//buffer.scrollTop = buffer.scrollHeight;
-			//$scope.command = '';
-		}
+			cli.print(cli.settings.prompt + this.cache.commandInput.value);
+			cli.run(this.cache.commandInput.value);
 
-		//$scope.$apply();
+			this.cache.buffer.scrollTop = this.cache.buffer.scrollHeight;
+			this.cache.commandInput.value = '';
+		}
+		//TODO: other keys
 	}.bind(this));
 
 
@@ -112,7 +111,7 @@ window.cli = new (function() {
 	/* API */
 
 	this.print = function(string) {
-		this.cache.buffer.innerHTML += string + '\n';
+		this.cache.buffer.innerHTML += string.replace(/\t/g, '    ').replace(/  /g, '  ') + '\n';
 	}.bind(this);
 
 	this.run = function(command) {
@@ -129,11 +128,28 @@ window.cli = new (function() {
 
 		var pipeline = new Promise((resolve, reject) => resolve(commandObject));
 
-		console.log(this.workers.pre);
+		this.workers.pre.forEach(ordered => ordered.forEach(processsor => {
+			//console.log('pre', processsor);
+			pipeline = pipeline.then(commandObject => processsor.worker(commandObject));
+		}));
 
-		//this.workers.pre.forEach(ordered => ordered.forEach(processsor => {
-		//	pipeline = pipeline.then(processsor.worker(commandObject))
-		//}));
+		pipeline = pipeline.then(commandObject => new Promise((resolve, reject) => {
+			//console.log('command', commandObject);
+			var command;
+			if (commandObject.command && (command = this.workers.commands[commandObject.command])) {
+				//console.log('run', command);
+				return resolve(command.worker(commandObject))
+					.then(result => commandObject = result || commandObject);
+			}
+			return resolve(commandObject);
+		}));
+
+		this.workers.post.forEach(ordered => ordered.forEach(processsor => {
+			//console.log('post', processsor);
+			pipeline = pipeline.then(commandObject => processsor.worker(commandObject));
+		}));
+
+		return pipeline;
 
 		//var pipeline = this.workers.pre.reduce(function(pipeline, processor, i) {
 		//	return $q.when(pipeline).then(function() {return processor.worker(commandObject)});
