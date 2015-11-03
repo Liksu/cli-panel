@@ -150,31 +150,6 @@ window.cli = new (function() {
 		}));
 
 		return pipeline;
-
-		//var pipeline = this.workers.pre.reduce(function(pipeline, processor, i) {
-		//	return $q.when(pipeline).then(function() {return processor.worker(commandObject)});
-		//}, commandObject);
-		//
-		//pipeline = $q.when(pipeline).then(function() {
-		//	var command;
-		//	if (commandObject.command && (command = this.workers.commands[commandObject.command])) {
-		//		return $q
-		//			.when(command.worker(commandObject))
-		//			.then(function(result) {commandObject = result || commandObject});
-		//	}
-		//
-		//	return $q.when(commandObject);
-		//}.bind(this));
-		//
-		//pipeline = $q.when(pipeline).then(function() {
-		//	this.workers.post.reduce(function (pipeline, processor, i) {
-		//		return $q.when(pipeline).then(function () {
-		//			return processor.worker(commandObject)
-		//		});
-		//	}, $q.when(commandObject));
-		//}.bind(this));
-		//
-		//return pipeline.then(function() { return commandObject });
 	}.bind(this);
 
 	/**

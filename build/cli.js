@@ -1,6 +1,6 @@
 /**
  * cli-panel - Command line interface for angular sites
- * @version v0.1.2
+ * @version v0.1.3
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -173,31 +173,6 @@ window.cli = new function () {
 		});
 
 		return pipeline;
-
-		//var pipeline = this.workers.pre.reduce(function(pipeline, processor, i) {
-		//	return $q.when(pipeline).then(function() {return processor.worker(commandObject)});
-		//}, commandObject);
-		//
-		//pipeline = $q.when(pipeline).then(function() {
-		//	var command;
-		//	if (commandObject.command && (command = this.workers.commands[commandObject.command])) {
-		//		return $q
-		//			.when(command.worker(commandObject))
-		//			.then(function(result) {commandObject = result || commandObject});
-		//	}
-		//
-		//	return $q.when(commandObject);
-		//}.bind(this));
-		//
-		//pipeline = $q.when(pipeline).then(function() {
-		//	this.workers.post.reduce(function (pipeline, processor, i) {
-		//		return $q.when(pipeline).then(function () {
-		//			return processor.worker(commandObject)
-		//		});
-		//	}, $q.when(commandObject));
-		//}.bind(this));
-		//
-		//return pipeline.then(function() { return commandObject });
 	}).bind(this);
 
 	/**
@@ -234,6 +209,8 @@ window.cli = new function () {
 
 'use strict';
 
+function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
+
 (function (cli) {
 	//angular.module('cli').run(function($cli) {
 	//	$cli.command('clear', 'Clear screen', function(commandObject) {
@@ -265,8 +242,6 @@ window.cli = new function () {
 	//		})
 	//});
 })(window.cli);
-(function (cli) {})(window.cli);
-(function (cli) {})(window.cli);
 (function (cli) {
 	//angular.module('cli').run(function($cli) {
 	//	function calc(string) {
@@ -282,34 +257,141 @@ window.cli = new function () {
 	//	});
 	//});
 })(window.cli);
+(function (cli) {})(window.cli);
+(function (cli) {})(window.cli);
 (function (cli) {
+	function parse(str) {
+		var argv = { _: [] };
+
+		if (!str) return argv;
+
+		// -- tail
+		var tail = str.match(/^(.*?)\s+\-\-\s+(.*)$/);
+		if (tail) {
+			str = tail[1];
+			tail = tail[2];
+		}
+
+		if (!str) {
+			argv._ = [tail];
+			return argv;
+		}
+
+		console.log('str: %s; tail: %s', str, tail);
+
+		// extract strings
+		var splitted = str.split('');
+		var parts = [],
+		    quote = false,
+		    string = false,
+		    buffer = [];
+
+		for (var i = 0; i <= splitted.length; i++) {
+			if (splitted[i] === '\\') {
+				quote = true;continue;
+			} else if (quote) {
+				quote = false;continue;
+			}
+
+			if (splitted[i] === '"' || splitted[i] === "'") {
+				if (!string) {
+					parts.push(buffer.join('').trim());
+					buffer = [];
+					string = { char: splitted[i], position: i, text: [] };
+					continue;
+				} else if (string.char === splitted[i]) {
+					string.text = string.text.join('');
+					parts.push(string);
+					string = false;
+					continue;
+				}
+			}
+
+			if (string) string.text.push(splitted[i]);else buffer.push(splitted[i]);
+		}
+		parts.push(buffer.join('').trim());
+
+		console.log('extracted strings', parts);
+
+		// process params
+		parts = parts.map(function (item) {
+			if (typeof item === 'string') return item.split(/\s+|=/);
+			return item;
+		});
+		parts = [].concat.apply([], parts);
+
+		parts = parts.map(function (item) {
+			if (/^\-([^-]+)$/.test(item)) return { flags: RegExp.$1.split('') };
+			if (/^\-\-(.+)$/.test(item)) {
+				var param = RegExp.$1;
+				// to camel case
+				param = param.split('-').map(function (word) {
+					return word.charAt(0).toUpperCase() + word.slice(1);
+				}).join('');
+				param = param.charAt(0).toLowerCase() + param.slice(1);
+
+				return { param: param };
+			}
+			return item;
+		});
+		parts = parts.map(function (item) {
+			return item.text || item;
+		});
+
+		// process result object
+		parts.push(tail);
+
+		console.log('processed params', parts);
+
+		while (parts.length) {
+			var item = parts.shift();
+			if (!item) continue;
+
+			if ((typeof item === 'undefined' ? 'undefined' : _typeof(item)) !== 'object') argv._.push(item);else {
+				var param = item.param;
+				if (item.flags) {
+					param = item.flags.pop();
+					while (item.flags.length) argv[item.flags.shift()] = true;
+				}
+
+				if (typeof parts[0] === 'string') {
+					argv[param] = parts.shift();
+					// restore types
+					if (!isNaN(parseFloat(argv[param])) && isFinite(argv[param])) argv[param] = +argv[param];
+					var types = { 'true': true, 'false': false, 'null': null, 'undefined': undefined };
+					if (types.hasOwnProperty(argv[param])) argv[param] = types[argv[param]];
+				} else argv[param] = true;
+			}
+		}
+
+		// done
+		return argv;
+	}
+
 	cli.preprocessor('argv', 'Split command line to arguments', function (commandObject) {
 		if (!commandObject.input) return commandObject;
 
-		var word = commandObject.input.match(/^\w+/);
-		if (Object.keys(cli.workers.commands).indexOf(word && word[0]) !== -1) {
-			commandObject.command = word[0];
-			commandObject.input = commandObject.input.replace(word[0], '');
-			commandObject.argv._ = commandObject.input.replace(/^\s*/, '').replace(/\s*$/, '').split(/\s+/);
+		commandObject.command = null;
+
+		var commands = Object.keys(cli.workers.commands).sort(function (a, b) {
+			return b.length - a.length;
+		});
+		commands.some(function (cmd) {
+			if (commandObject.input.indexOf(cmd) === 0) {
+				commandObject.command = cmd;
+				commandObject.input = commandObject.input.replace(cmd, '').trim();
+			}
+			return commandObject.command;
+		});
+
+		if (commandObject.command) {
+			commandObject.argv = parse(commandObject.input);
 			commandObject.input = '';
 		}
 
+		console.log(commandObject);
 		return commandObject;
 	});
-
-	//angular.module('cli').run(function($cli) {
-	//	$cli.preprocessor('argv', 'Split command line to arguments', function(commandObject) {
-	//		if (!commandObject.input) return commandObject;
-	//
-	//		var word = commandObject.input.match(/^\w+/);
-	//		if (Object.keys($cli.workers.commands).indexOf(word && word[0]) !== -1) {
-	//			commandObject.command = word[0];
-	//			commandObject.input = commandObject.input.replace(word[0], '');
-	//		}
-	//
-	//		return commandObject
-	//	});
-	//});
 })(window.cli);
 
 (function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli\"><div onclick=\"focus()\" class=\"cli-panel show\"><div class=\"cli-history\"><span class=\"cli-buffer\"></span><span class=\"cli-loader hide_element\"></span></div><div class=\"cli-line\"><span class=\"cli-prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"cli-command\"/></div></div></div>", "body");})(window.cli)
