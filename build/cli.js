@@ -4,6 +4,12 @@
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
+(function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli\"><div onclick=\"focus()\" class=\"cli-panel show\"><div class=\"cli-history\"><span class=\"cli-buffer\"></span><span class=\"cli-loader hide_element\"></span></div><div class=\"cli-line\"><span class=\"cli-prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"cli-command\"/></div></div></div>", "body");})(window.cli)
+
+!function(){var a=".cli {\n  max-height: 64%; }\n  .cli-panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 0.64s linear; }\n  .cli-panel.show {\n    height: 64%; }\n  .cli-history {\n    overflow: auto;\n    white-space: pre-line;\n    position: absolute;\n    bottom: 20px; }\n  .cli-line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%; }\n  .cli-command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 20px;\n    width: 100%;\n    box-sizing: border-box;\n    margin-left: -20px; }\n  .cli .hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();
+
+'use strict';
+
 window.cli = new function () {
 	this.cache = {
 		commandInput: null,
@@ -131,7 +137,9 @@ window.cli = new function () {
 		// run over all
 		// each step is promise
 
-		var pipeline = new Promise((resolve, reject) => resolve(commandObject));
+		var pipeline = new Promise(function (resolve, reject) {
+			return resolve(commandObject);
+		});
 
 		console.log(this.workers.pre);
 
@@ -196,18 +204,12 @@ window.cli = new function () {
 	this.preprocessor = store.bind(this, 'pre');
 	this.postprocessor = store.bind(this, 'post');
 }();
-
-(function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli\"><div onclick=\"focus()\" class=\"cli-panel show\"><div class=\"cli-history\"><span class=\"cli-buffer\"></span><span class=\"cli-loader hide_element\"></span></div><div class=\"cli-line\"><span class=\"cli-prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"cli-command\"/></div></div></div>", "body");})(window.cli)
-
-!function(){var a=".cli {\n  max-height: 64%; }\n  .cli-panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 0.64s linear; }\n  .cli-panel.show {\n    height: 64%; }\n  .cli-history {\n    overflow: auto;\n    white-space: pre-line;\n    position: absolute;\n    bottom: 20px; }\n  .cli-line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%; }\n  .cli-command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 20px;\n    width: 100%;\n    box-sizing: border-box;\n    margin-left: -20px; }\n  .cli .hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();
-
 angular.module('cli').run(function ($cli) {
 	$cli.command('clear', 'Clear screen', function (commandObject) {
 		$cli.buffer = '';
 		$cli.print(null);
 	});
 });
-
 angular.module('cli').run(function ($cli) {
 	$cli.command('help', 'Display this list', function (commandObject) {
 		$cli.print('List of available commands:');
@@ -218,7 +220,6 @@ angular.module('cli').run(function ($cli) {
 	});
 	//console.log( 'help', angular.module('cli')._invokeQueue );
 });
-
 angular.module('cli').run(function ($cli) {
 	var services = angular.modules.filter(function (module) {
 		return module !== 'cli';
@@ -232,11 +233,6 @@ angular.module('cli').run(function ($cli) {
 		//$cli.command(service, )
 	});
 });
-
-
-
-
-
 angular.module('cli').run(function ($cli) {
 	function calc(string) {
 		return eval(string);

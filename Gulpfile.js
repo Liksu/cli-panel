@@ -28,7 +28,10 @@ var srcCode = function() {
 	return gulp.src(['src/cli.js', 'src/**/*.js'])
 		.pipe(plumber())
 		.pipe(size({showFiles: true}))
-		.pipe(babel())
+		.pipe(concat('code.js'))
+		.pipe(babel({
+			presets: ['babel-preset-es2015', 'babel-preset-stage-0']
+		}))
 };
 
 var srcStyle = function() {
