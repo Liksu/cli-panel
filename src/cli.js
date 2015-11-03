@@ -56,19 +56,23 @@ window.cli = new (function() {
 	/* keyboard */
 
 	document.addEventListener('keydown', function(e) {
+		var isInCommandLine = e.target === this.cache.commandInput;
 		if (e.keyCode === 192) { // `
-			if (e.target.nodeName === 'INPUT' && e.target !== this.cache.commandInput) return;
-			if (e.target === this.cache.commandInput) e.preventDefault();
+			if (!isInCommandLine) return;
+			else e.preventDefault();
+
 			this.toggle();
 		}
-		else if (e.keyCode === 13 && e.target === this.cache.commandInput) { // enter
+		else if (e.keyCode === 13 && isInCommandLine) { // enter
 			cli.print(cli.cache.prompt.outerHTML + this.cache.commandInput.value);
 			cli.run(this.cache.commandInput.value);
 
 			this.cache.buffer.scrollTop = this.cache.buffer.scrollHeight;
 			this.cache.commandInput.value = '';
 		}
-		//TODO: other keys
+
+		if (this.workers.keys[e.keyCode]) this.workers.keys[e.keyCode].forEach(stored => stored.worker(e, isInCommandLine));
+		if (this.workers.keys[0]) this.workers.keys[0].forEach(stored => stored.worker(e, isInCommandLine));
 	}.bind(this));
 
 
@@ -126,7 +130,7 @@ window.cli = new (function() {
 	}.bind(this);
 
 	this.run = function(command) {
-		this.history.push(command);
+		if (command) this.history.push(command);
 		var commandObject = {
 			input: command,
 			original: command,
@@ -184,7 +188,11 @@ window.cli = new (function() {
 			worker: worker
 		};
 
-		if (type === 'command' || type === 'keys') this.workers.commands[name] = storeObject;
+		if (type === 'command') this.workers.commands[name] = storeObject;
+		else if (type === 'keys') {
+			if (!this.workers.keys[name]) this.workers.keys[name] = [];
+			this.workers.keys[name].push(storeObject);
+		}
 		else {
 			if (!this.workers[type][order]) this.workers[type][order] = [];
 			this.workers[type][order].push(storeObject);
@@ -194,5 +202,6 @@ window.cli = new (function() {
 	this.command = store.bind(this, 'command');
 	this.preprocessor = store.bind(this, 'pre');
 	this.postprocessor = store.bind(this, 'post');
+	this.registerKey = store.bind(this, 'keys');
 
 })();

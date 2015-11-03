@@ -64,12 +64,13 @@ window.cli = new function () {
 	/* keyboard */
 
 	document.addEventListener('keydown', (function (e) {
+		var isInCommandLine = e.target === this.cache.commandInput;
 		if (e.keyCode === 192) {
 			// `
-			if (e.target.nodeName === 'INPUT' && e.target !== this.cache.commandInput) return;
-			if (e.target === this.cache.commandInput) e.preventDefault();
+			if (!isInCommandLine) return;else e.preventDefault();
+
 			this.toggle();
-		} else if (e.keyCode === 13 && e.target === this.cache.commandInput) {
+		} else if (e.keyCode === 13 && isInCommandLine) {
 			// enter
 			cli.print(cli.cache.prompt.outerHTML + this.cache.commandInput.value);
 			cli.run(this.cache.commandInput.value);
@@ -77,7 +78,13 @@ window.cli = new function () {
 			this.cache.buffer.scrollTop = this.cache.buffer.scrollHeight;
 			this.cache.commandInput.value = '';
 		}
-		//TODO: other keys
+
+		if (this.workers.keys[e.keyCode]) this.workers.keys[e.keyCode].forEach(function (stored) {
+			return stored.worker(e, isInCommandLine);
+		});
+		if (this.workers.keys[0]) this.workers.keys[0].forEach(function (stored) {
+			return stored.worker(e, isInCommandLine);
+		});
 	}).bind(this));
 
 	/* ui helpers */
@@ -135,7 +142,7 @@ window.cli = new function () {
 	this.run = (function (command) {
 		var _this = this;
 
-		this.history.push(command);
+		if (command) this.history.push(command);
 		var commandObject = {
 			input: command,
 			original: command,
@@ -206,7 +213,10 @@ window.cli = new function () {
 			worker: worker
 		};
 
-		if (type === 'command' || type === 'keys') this.workers.commands[name] = storeObject;else {
+		if (type === 'command') this.workers.commands[name] = storeObject;else if (type === 'keys') {
+			if (!this.workers.keys[name]) this.workers.keys[name] = [];
+			this.workers.keys[name].push(storeObject);
+		} else {
 			if (!this.workers[type][order]) this.workers[type][order] = [];
 			this.workers[type][order].push(storeObject);
 		}
@@ -215,14 +225,13 @@ window.cli = new function () {
 	this.command = store.bind(this, 'command');
 	this.preprocessor = store.bind(this, 'pre');
 	this.postprocessor = store.bind(this, 'post');
+	this.registerKey = store.bind(this, 'keys');
 }();
 
 'use strict';
 
 function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
 
-(function (cli) {})(window.cli);
-(function (cli) {})(window.cli);
 (function (cli) {
 	cli.command('clear', 'Clear screen', function (commandObject) {
 		cli.cache.buffer.innerHTML = '';
@@ -230,7 +239,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 })(window.cli);
 (function (cli) {
 	cli.command('help', 'Display this list', function (commandObject) {
-		//console.log('in help', commandObject);
 		cli.print('List of available commands:');
 
 		Object.keys(cli.workers.commands).sort().forEach(function (command) {
@@ -239,17 +247,48 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		});
 	});
 })(window.cli);
+(function (cli) {})(window.cli);
 (function (cli) {
-	//angular.module('cli').run(function($cli) {
-	//	var services = angular.modules
-	//		.filter(function(module) { return module !== 'cli' })
-	//		.reduce(function(list, module) { return list.concat(angular.module(module)._invokeQueue) }, [])
-	//		.filter(function(item) { return item[1] === 'service' })
-	//		.map(function(item) { return item[2][0] })
-	//		.forEach(function(service) {
-	//			//$cli.command(service, )
-	//		})
-	//});
+	var lastCommand = '';
+	var historyScroll = 0;
+
+	function setCommand(command) {
+		cli.cache.commandInput.value = command;
+		cli.focus();
+		console.log(command, cli.history);
+	}
+
+	cli.registerKey(38, 'Up', function (event, isInCommandLine) {
+		if (!isInCommandLine) return;
+		if (historyScroll == cli.history.length) return;
+
+		if (!historyScroll) lastCommand = cli.cache.commandInput.value;
+
+		historyScroll++;
+		if (historyScroll > cli.history.length) historyScroll = cli.history.length;
+
+		setCommand(cli.history[cli.history.length - historyScroll]);
+	});
+
+	cli.registerKey(40, 'Down', function (event, isInCommandLine) {
+		if (!isInCommandLine) return;
+		if (!historyScroll) return;
+
+		historyScroll--;
+		var command = '';
+
+		if (historyScroll <= 0) {
+			historyScroll = 0;
+			command = lastCommand;
+		} else command = cli.history[cli.history.length - historyScroll];
+
+		setCommand(command);
+	});
+
+	cli.registerKey(13, 'Enter', function (event, isInCommandLine) {
+		lastCommand = '';
+		historyScroll = 0;
+	});
 })(window.cli);
 (function (cli) {
 	//angular.module('cli').run(function($cli) {
