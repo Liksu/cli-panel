@@ -71,7 +71,7 @@ window.cli = new function () {
 			this.toggle();
 		} else if (e.keyCode === 13 && e.target === this.cache.commandInput) {
 			// enter
-			cli.print(cli.settings.prompt + this.cache.commandInput.value);
+			cli.print(cli.cache.prompt.outerHTML + this.cache.commandInput.value);
 			cli.run(this.cache.commandInput.value);
 
 			this.cache.buffer.scrollTop = this.cache.buffer.scrollHeight;
@@ -221,13 +221,12 @@ window.cli = new function () {
 
 function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
 
+(function (cli) {})(window.cli);
+(function (cli) {})(window.cli);
 (function (cli) {
-	//angular.module('cli').run(function($cli) {
-	//	$cli.command('clear', 'Clear screen', function(commandObject) {
-	//		$cli.buffer = '';
-	//		$cli.print(null);
-	//	});
-	//});
+	cli.command('clear', 'Clear screen', function (commandObject) {
+		cli.cache.buffer.innerHTML = '';
+	});
 })(window.cli);
 (function (cli) {
 	cli.command('help', 'Display this list', function (commandObject) {
@@ -252,8 +251,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 	//		})
 	//});
 })(window.cli);
-(function (cli) {})(window.cli);
-(function (cli) {})(window.cli);
 (function (cli) {
 	//angular.module('cli').run(function($cli) {
 	//	function calc(string) {
@@ -400,4 +397,4 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 
 (function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli\"><div onmouseup=\"cli.mouseUp()\" class=\"cli-panel show\"><div class=\"cli-history\"><span class=\"cli-buffer\"></span><span class=\"cli-loader hide_element\"></span></div><div class=\"cli-line\"><span class=\"cli-prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"cli-command\"/></div></div></div>", "body");})(window.cli)
 
-!function(){var a=".cli {\n  max-height: 64%; }\n  .cli-panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 0.64s linear; }\n  .cli-panel.show {\n    height: 64%; }\n  .cli-history {\n    overflow: auto;\n    white-space: pre-wrap;\n    position: absolute;\n    bottom: 20px; }\n  .cli-line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%; }\n  .cli-command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 20px;\n    width: 100%;\n    box-sizing: border-box;\n    margin-left: -20px; }\n  .cli .hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();
+!function(){var a=".cli {\n  max-height: 64%; }\n  .cli-panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 0.64s linear; }\n  .cli-panel.show {\n    height: 64%; }\n  .cli-history {\n    overflow: auto;\n    white-space: pre-wrap;\n    position: absolute;\n    bottom: 20px; }\n    .cli-history .cli-prompt {\n      display: inline;\n      width: auto; }\n  .cli-line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%;\n    display: table; }\n  .cli-prompt {\n    display: table-cell;\n    width: 1px; }\n  .cli-command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 12px;\n    width: 100%;\n    box-sizing: border-box;\n    display: table-cell; }\n  .cli .hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();

@@ -1,6 +1,3 @@
-//angular.module('cli').run(function($cli) {
-//	$cli.command('clear', 'Clear screen', function(commandObject) {
-//		$cli.buffer = '';
-//		$cli.print(null);
-//	});
-//});
+cli.command('clear', 'Clear screen', function(commandObject) {
+	cli.cache.buffer.innerHTML = '';
+});
