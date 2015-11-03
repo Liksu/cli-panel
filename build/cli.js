@@ -55,6 +55,8 @@ window.cli = new function () {
 		this.cache.panel = document.querySelector('.cli .cli-panel');
 		this.cache.commandInput = this.cache.panel.querySelector('.cli .cli-line .cli-command');
 		this.cache.buffer = this.cache.panel.querySelector('.cli-buffer');
+		this.cache.prompt = this.cache.panel.querySelector('.cli-prompt');
+		this.cache.prompt.innerHTML = this.settings.prompt;
 
 		this.toggle(this.cache.show);
 	}).bind(this));
@@ -94,6 +96,14 @@ window.cli = new function () {
 	this.toggle = (function (show) {
 		if (show === undefined) show = !this.cache.show;
 		show ? this.show() : this.hide();
+	}).bind(this);
+
+	this.mouseUp = (function () {
+		var selectedText = "";
+		if (window.getSelection) selectedText = window.getSelection().toString();else if (document.selection && document.selection.type != "Control") {
+			selectedText = document.selection.createRange().text;
+		}
+		if (!selectedText) this.focus();
 	}).bind(this);
 
 	this.focus = (function () {
@@ -242,6 +252,8 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 	//		})
 	//});
 })(window.cli);
+(function (cli) {})(window.cli);
+(function (cli) {})(window.cli);
 (function (cli) {
 	//angular.module('cli').run(function($cli) {
 	//	function calc(string) {
@@ -257,8 +269,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 	//	});
 	//});
 })(window.cli);
-(function (cli) {})(window.cli);
-(function (cli) {})(window.cli);
 (function (cli) {
 	function parse(str) {
 		var argv = { _: [] };
@@ -276,8 +286,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 			argv._ = [tail];
 			return argv;
 		}
-
-		console.log('str: %s; tail: %s', str, tail);
 
 		// extract strings
 		var splitted = str.split('');
@@ -311,8 +319,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		}
 		parts.push(buffer.join('').trim());
 
-		console.log('extracted strings', parts);
-
 		// process params
 		parts = parts.map(function (item) {
 			if (typeof item === 'string') return item.split(/\s+|=/);
@@ -340,8 +346,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 
 		// process result object
 		parts.push(tail);
-
-		console.log('processed params', parts);
 
 		while (parts.length) {
 			var item = parts.shift();
@@ -394,6 +398,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 	});
 })(window.cli);
 
-(function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli\"><div onclick=\"focus()\" class=\"cli-panel show\"><div class=\"cli-history\"><span class=\"cli-buffer\"></span><span class=\"cli-loader hide_element\"></span></div><div class=\"cli-line\"><span class=\"cli-prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"cli-command\"/></div></div></div>", "body");})(window.cli)
+(function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli\"><div onmouseup=\"cli.mouseUp()\" class=\"cli-panel show\"><div class=\"cli-history\"><span class=\"cli-buffer\"></span><span class=\"cli-loader hide_element\"></span></div><div class=\"cli-line\"><span class=\"cli-prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"cli-command\"/></div></div></div>", "body");})(window.cli)
 
 !function(){var a=".cli {\n  max-height: 64%; }\n  .cli-panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 0.64s linear; }\n  .cli-panel.show {\n    height: 64%; }\n  .cli-history {\n    overflow: auto;\n    white-space: pre-wrap;\n    position: absolute;\n    bottom: 20px; }\n  .cli-line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%; }\n  .cli-command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 20px;\n    width: 100%;\n    box-sizing: border-box;\n    margin-left: -20px; }\n  .cli .hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();

@@ -15,8 +15,6 @@ function parse(str) {
 		return argv;
 	}
 
-	console.log('str: %s; tail: %s', str, tail);
-
 	// extract strings
 	var splitted = str.split('');
 	var parts = [], quote = false, string = false, buffer = [];
@@ -45,8 +43,6 @@ function parse(str) {
 	}
 	parts.push(buffer.join('').trim());
 
-	console.log('extracted strings', parts);
-
 	// process params
 	parts = parts.map(item => {
 		if (typeof item === 'string') return item.split(/\s+|=/);
@@ -70,8 +66,6 @@ function parse(str) {
 
 	// process result object
 	parts.push(tail);
-
-	console.log('processed params', parts);
 
 	while (parts.length) {
 		let item = parts.shift();

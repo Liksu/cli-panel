@@ -47,6 +47,8 @@ window.cli = new (function() {
 		this.cache.panel = document.querySelector('.cli .cli-panel');
 		this.cache.commandInput = this.cache.panel.querySelector('.cli .cli-line .cli-command');
 		this.cache.buffer = this.cache.panel.querySelector('.cli-buffer');
+		this.cache.prompt = this.cache.panel.querySelector('.cli-prompt');
+		this.cache.prompt.innerHTML = this.settings.prompt;
 
 		this.toggle(this.cache.show);
 	}.bind(this));
@@ -86,6 +88,15 @@ window.cli = new (function() {
 	this.toggle = function(show){
 		if (show === undefined) show = !this.cache.show;
 		show ? this.show() : this.hide();
+	}.bind(this);
+
+	this.mouseUp = function() {
+		var selectedText = "";
+		if (window.getSelection) selectedText = window.getSelection().toString();
+		else if (document.selection && document.selection.type != "Control") {
+			selectedText = document.selection.createRange().text;
+		}
+		if (!selectedText) this.focus();
 	}.bind(this);
 
 	this.focus = function() {
