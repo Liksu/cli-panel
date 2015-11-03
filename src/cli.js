@@ -62,7 +62,7 @@ window.cli = new (function() {
 			this.toggle();
 		}
 		else if (e.keyCode === 13 && e.target === this.cache.commandInput) { // enter
-			cli.print(cli.settings.prompt + this.cache.commandInput.value);
+			cli.print(cli.cache.prompt.outerHTML + this.cache.commandInput.value);
 			cli.run(this.cache.commandInput.value);
 
 			this.cache.buffer.scrollTop = this.cache.buffer.scrollHeight;
