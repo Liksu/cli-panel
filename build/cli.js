@@ -174,6 +174,8 @@ window.cli = new function () {
 				}
 				return resolve(commandObject);
 			});
+		}).then(function (result) {
+			return result || commandObject;
 		});
 
 		this.workers.post.forEach(function (ordered) {
@@ -206,9 +208,16 @@ window.cli = new function () {
 		var storeObject = {
 			name: name,
 			description: description,
-			worker: function worker(e, obj) {
-				cli.log('call worker', type, name);
-				return _worker(e, obj);
+			// worker: worker
+			worker: function worker() {
+				for (var _len2 = arguments.length, arg = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+					arg[_key2] = arguments[_key2];
+				}
+
+				cli.log('call worker', type, name, 'with arguments:', arg);
+				var result = _worker.apply(null, arg);
+				cli.log('and result:', result);
+				return result;
 			}
 		};
 
@@ -231,6 +240,34 @@ window.cli = new function () {
 
 function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
 
+(function (cli) {
+	cli.command('clear', 'Clear screen', function (commandObject) {
+		cli.log('execute command clear');
+		cli.cache.buffer.innerHTML = '';
+	});
+})(window.cli);
+(function (cli) {
+	cli.command('help', 'Display this list', function (commandObject) {
+		cli.log('execute command help');
+		cli.print('List of available commands:');
+
+		Object.keys(cli.workers.commands).sort().forEach(function (command) {
+			var descr = cli.workers.commands[command].description;
+			cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
+		});
+	});
+})(window.cli);
+(function (cli) {
+	cli.postprocessor('calc', 'Simple calculator', function (commandObject) {
+		cli.log('execute POST processor calc');
+
+		if (!commandObject.input) return commandObject;
+
+		console.log('calc', commandObject.input);
+
+		return commandObject;
+	});
+})(window.cli);
 (function (cli) {
 	cli.registerKey(9, 'Tab', function (event, isInCommandLine) {
 		cli.log('process key Tab for autocomplete');
@@ -318,34 +355,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		if (isInCommandLine) event.preventDefault();
 
 		cli.toggle();
-	});
-})(window.cli);
-(function (cli) {
-	cli.command('clear', 'Clear screen', function (commandObject) {
-		cli.log('execute command clear');
-		cli.cache.buffer.innerHTML = '';
-	});
-})(window.cli);
-(function (cli) {
-	cli.command('help', 'Display this list', function (commandObject) {
-		cli.log('execute command help');
-		cli.print('List of available commands:');
-
-		Object.keys(cli.workers.commands).sort().forEach(function (command) {
-			var descr = cli.workers.commands[command].description;
-			cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
-		});
-	});
-})(window.cli);
-(function (cli) {
-	cli.postprocessor('calc', 'Simple calculator', function (commandObject) {
-		cli.log('execute POST processor calc');
-
-		if (!commandObject.input) return commandObject;
-
-		console.log('calc', commandObject.input);
-
-		return commandObject;
 	});
 })(window.cli);
 (function (cli) {

@@ -150,7 +150,7 @@ window.cli = new (function() {
 				return resolve(command.worker(commandObject) || commandObject)
 			}
 			return resolve(commandObject);
-		}));
+		})).then(result => result || commandObject);
 
 		this.workers.post.forEach(ordered => ordered.forEach(processsor => {
 			cli.log('promise post', processsor);
@@ -178,9 +178,12 @@ window.cli = new (function() {
 		var storeObject = {
 			name: name,
 			description: description,
-			worker(e, obj) {
-				cli.log('call worker', type, name);
-				return worker(e, obj);
+			// worker: worker
+			worker(...arg) {
+				cli.log('call worker', type, name, 'with arguments:', arg);
+				var result = worker.apply(null, arg);
+				cli.log('and result:', result);
+				return result;
 			}
 		};
 
