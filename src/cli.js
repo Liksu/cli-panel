@@ -120,7 +120,7 @@ window.cli = new (function() {
 	/* API */
 
 	this.print = function(string) {
-		this.cache.buffer.innerHTML += string.replace(/\t/g, '    ') + '\n';
+		this.cache.buffer.innerHTML += ('' + string).replace(/\t/g, '    ') + '\n';
 	}.bind(this);
 
 	this.run = function(command) {
@@ -132,8 +132,6 @@ window.cli = new (function() {
 			argv: {},
 			result: null
 		};
-		// run over all
-		// each step is promise
 
 		var pipeline = new Promise((resolve, reject) => resolve(commandObject));
 

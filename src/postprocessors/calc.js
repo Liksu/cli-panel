@@ -1,13 +1,15 @@
-//angular.module('cli').run(function($cli) {
-//	function calc(string) {
-//		return eval(string);
-//	}
-//
-//	$cli.postprocessor('calc', 'Calculate input', function(commandObject) {
-//		if (!commandObject.input) return commandObject;
-//
-//		$cli.print(calc(commandObject.input));
-//
-//		return commandObject
-//	});
-//});
+cli.postprocessor('calc', 'Simple calculator', commandObject => {
+	cli.log('execute POST processor calc');
+	var input = commandObject.input;
+
+	if (!input) return commandObject;
+	if (!/^[\s\d.e()/*+-]+$/.test(input)) return commandObject;
+
+	try {
+		commandObject.result = eval(input);
+		console.log(input, eval(input), commandObject.result);
+		cli.print(commandObject.result);
+	} catch(e) {}
+
+	return commandObject;
+});

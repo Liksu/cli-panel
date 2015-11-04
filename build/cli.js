@@ -134,7 +134,7 @@ window.cli = new function () {
 	/* API */
 
 	this.print = (function (string) {
-		this.cache.buffer.innerHTML += string.replace(/\t/g, '    ') + '\n';
+		this.cache.buffer.innerHTML += ('' + string).replace(/\t/g, '    ') + '\n';
 	}).bind(this);
 
 	this.run = (function (command) {
@@ -148,8 +148,6 @@ window.cli = new function () {
 			argv: {},
 			result: null
 		};
-		// run over all
-		// each step is promise
 
 		var pipeline = new Promise(function (resolve, reject) {
 			return resolve(commandObject);
@@ -255,17 +253,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 			var descr = cli.workers.commands[command].description;
 			cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
 		});
-	});
-})(window.cli);
-(function (cli) {
-	cli.postprocessor('calc', 'Simple calculator', function (commandObject) {
-		cli.log('execute POST processor calc');
-
-		if (!commandObject.input) return commandObject;
-
-		console.log('calc', commandObject.input);
-
-		return commandObject;
 	});
 })(window.cli);
 (function (cli) {
@@ -484,6 +471,23 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		}
 
 		cli.log('argv result', commandObject);
+		return commandObject;
+	});
+})(window.cli);
+(function (cli) {
+	cli.postprocessor('calc', 'Simple calculator', function (commandObject) {
+		cli.log('execute POST processor calc');
+		var input = commandObject.input;
+
+		if (!input) return commandObject;
+		if (!/^[\s\d.e()/*+-]+$/.test(input)) return commandObject;
+
+		try {
+			commandObject.result = eval(input);
+			console.log(input, eval(input), commandObject.result);
+			cli.print(commandObject.result);
+		} catch (e) {}
+
 		return commandObject;
 	});
 })(window.cli);
