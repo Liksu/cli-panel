@@ -7,8 +7,8 @@ cli.postprocessor('calc', 'Simple calculator', commandObject => {
 
 	try {
 		commandObject.result = eval(input);
-		console.log(input, eval(input), commandObject.result);
 		cli.print(commandObject.result);
+		commandObject.input = '';
 	} catch(e) {}
 
 	return commandObject;
