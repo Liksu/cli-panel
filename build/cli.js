@@ -1,6 +1,6 @@
 /**
  * cli-panel - Command line interface for angular sites
- * @version v0.2.0
+ * @version v0.2.3
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -212,6 +212,7 @@ window.cli = new function () {
 					arg[_key2] = arguments[_key2];
 				}
 
+				// save call stack
 				cli.log('call worker', type, name, 'with arguments:', arg);
 				var result = _worker.apply(null, arg);
 				cli.log('and result:', result);
@@ -272,6 +273,11 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		});
 
 		if (!commands.length) return;else if (commands.length === 1) cli.cache.commandInput.value = commands[0] + ' ';else cli.print(commands.join('\t'));
+	});
+})(window.cli);
+(function (cli) {
+	cli.registerKey(0, 'Echo', function (event, isInCommandLine) {
+		cli.log('echo pressed key', event.keyCode, event);
 	});
 })(window.cli);
 (function (cli) {
@@ -354,12 +360,26 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 
 		try {
 			commandObject.result = eval(input);
-			console.log(input, eval(input), commandObject.result);
 			cli.print(commandObject.result);
+			commandObject.input = '';
 		} catch (e) {}
 
 		return commandObject;
 	});
+})(window.cli);
+(function (cli) {
+	cli.postprocessor('eval', 'Run js code', function (commandObject) {
+		var input = commandObject.input;
+		if (!input) return commandObject;
+
+		try {
+			commandObject.result = eval(input);
+			cli.print(commandObject.result);
+			commandObject.input = '';
+		} catch (e) {}
+
+		return commandObject;
+	}, 1000);
 })(window.cli);
 (function (cli) {
 	function parse(str) {

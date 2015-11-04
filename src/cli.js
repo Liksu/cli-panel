@@ -178,6 +178,7 @@ window.cli = new (function() {
 			description: description,
 			// worker: worker
 			worker(...arg) {
+				// save call stack
 				cli.log('call worker', type, name, 'with arguments:', arg);
 				var result = worker.apply(null, arg);
 				cli.log('and result:', result);
