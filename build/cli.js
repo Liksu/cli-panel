@@ -1,6 +1,6 @@
 /**
  * cli-panel - Command line interface for angular sites
- * @version v0.1.3
+ * @version v0.2.0
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -345,6 +345,23 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 	});
 })(window.cli);
 (function (cli) {
+	cli.postprocessor('calc', 'Simple calculator', function (commandObject) {
+		cli.log('execute POST processor calc');
+		var input = commandObject.input;
+
+		if (!input) return commandObject;
+		if (!/^[\s\d.e()/*+-]+$/.test(input)) return commandObject;
+
+		try {
+			commandObject.result = eval(input);
+			console.log(input, eval(input), commandObject.result);
+			cli.print(commandObject.result);
+		} catch (e) {}
+
+		return commandObject;
+	});
+})(window.cli);
+(function (cli) {
 	function parse(str) {
 		var argv = { _: [] };
 
@@ -471,23 +488,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		}
 
 		cli.log('argv result', commandObject);
-		return commandObject;
-	});
-})(window.cli);
-(function (cli) {
-	cli.postprocessor('calc', 'Simple calculator', function (commandObject) {
-		cli.log('execute POST processor calc');
-		var input = commandObject.input;
-
-		if (!input) return commandObject;
-		if (!/^[\s\d.e()/*+-]+$/.test(input)) return commandObject;
-
-		try {
-			commandObject.result = eval(input);
-			console.log(input, eval(input), commandObject.result);
-			cli.print(commandObject.result);
-		} catch (e) {}
-
 		return commandObject;
 	});
 })(window.cli);
