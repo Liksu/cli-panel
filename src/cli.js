@@ -56,7 +56,7 @@ window.cli = new (function() {
 		this.cache.buffer = this.cache.panel.querySelector('.cli-buffer');
 		this.cache.loader = this.cache.panel.querySelector('.cli-loader');
 		this.cache.prompt = this.cache.panel.querySelector('.cli-prompt');
-		this.cache.prompt.innerHTML = this.settings.prompt;
+		this.setPrompt();
 
 		this.toggle(this.cache.show);
 	}.bind(this);
@@ -157,6 +157,13 @@ window.cli = new (function() {
 	};
 
 	/* API */
+
+	this.setPrompt = function(prompt) {
+		if (prompt === undefined) prompt = this.settings.prompt;
+		else this.settings.prompt = prompt;
+
+		this.cache.prompt.innerHTML = prompt;
+	}.bind(this);
 
 	this.print = function(string) {
 		this.cache.buffer.innerHTML += ('' + string).replace(/\t/g, '    ') + '\n';

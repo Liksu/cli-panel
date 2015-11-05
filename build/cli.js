@@ -1,6 +1,6 @@
 /**
  * cli-panel - Command line interface for angular sites
- * @version v0.3.1
+ * @version v0.5.0
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -66,7 +66,7 @@ window.cli = new function () {
 		this.cache.buffer = this.cache.panel.querySelector('.cli-buffer');
 		this.cache.loader = this.cache.panel.querySelector('.cli-loader');
 		this.cache.prompt = this.cache.panel.querySelector('.cli-prompt');
-		this.cache.prompt.innerHTML = this.settings.prompt;
+		this.setPrompt();
 
 		this.toggle(this.cache.show);
 	}).bind(this);
@@ -172,6 +172,12 @@ window.cli = new function () {
 	};
 
 	/* API */
+
+	this.setPrompt = (function (prompt) {
+		if (prompt === undefined) prompt = this.settings.prompt;else this.settings.prompt = prompt;
+
+		this.cache.prompt.innerHTML = prompt;
+	}).bind(this);
 
 	this.print = (function (string) {
 		this.cache.buffer.innerHTML += ('' + string).replace(/\t/g, '    ') + '\n';
@@ -286,7 +292,7 @@ window.cli = new function () {
 	this.postprocessor = store.bind(this, 'post');
 	this.registerKey = store.bind(this, 'keys');
 }();
-window.cli.version = "0.3.1";
+window.cli.version = "0.5.0";
 
 'use strict';
 
