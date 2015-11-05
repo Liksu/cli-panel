@@ -28,6 +28,10 @@ window.cli = new function () {
 		keys: {}
 	};
 
+	/* history */
+
+	if (localStorage && localStorage.cliHistory) this.history = JSON.parse(localStorage.cliHistory);
+
 	/* templates */
 
 	this.templates = {};
@@ -174,7 +178,16 @@ window.cli = new function () {
 	this.run = (function (command) {
 		var _this3 = this;
 
-		if (command) this.history.push(command.trim());
+		if (command) {
+			this.history.push(command.trim());
+
+			var history = undefined,
+			    cnt = this.history.length;
+			do {
+				history = JSON.stringify(this.history.slice(- cnt--));
+			} while (history.length > 2000000);
+			localStorage.cliHistory = history;
+		}
 		var commandObject = {
 			input: command.trim(),
 			original: command,
