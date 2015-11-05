@@ -1,17 +1,20 @@
 /**
  * cli-panel - Command line interface for angular sites
- * @version v0.2.3
+ * @version v0.2.5
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
 'use strict';
 
 window.cli = new function () {
+	var _this = this;
+
 	this.cache = {
 		commandInput: null,
 		buffer: null,
 		panel: null,
-		show: false
+		show: false,
+		loading: false
 	};
 	this.history = [];
 	this.settings = {
@@ -54,8 +57,10 @@ window.cli = new function () {
 		});
 
 		this.cache.panel = document.querySelector('.cli .cli-panel');
+		this.cache.line = this.cache.panel.querySelector('.cli-line');
 		this.cache.commandInput = this.cache.panel.querySelector('.cli .cli-line .cli-command');
 		this.cache.buffer = this.cache.panel.querySelector('.cli-buffer');
+		this.cache.loader = this.cache.panel.querySelector('.cli-loader');
 		this.cache.prompt = this.cache.panel.querySelector('.cli-prompt');
 		this.cache.prompt.innerHTML = this.settings.prompt;
 
@@ -121,6 +126,35 @@ window.cli = new function () {
 		}, 0);
 	}).bind(this);
 
+	this.startLoading = function () {
+		_this.cache.loading = true;
+		_this.cache.loader.className = _this.cache.loader.className.replace(/\s*hide_element\s*/, '');
+		_this.cache.line.className += ' hide_element';
+		_this.cache.commandInput.disabled = true;
+
+		var propeller = [{ char: '|', duration: 100 }, { char: '/', duration: 80 }, { char: '-', duration: 100 }, { char: '\\', duration: 80 }].map(function (info, i, arr) {
+			return (function () {
+				var _this2 = this;
+
+				this.cache.loader.innerHTML = info.char;
+				setTimeout(function () {
+					if (_this2.cache.loading) propeller[i === arr.length - 1 ? 0 : i + 1]();
+				}, info.duration);
+			}).bind(_this);
+		});
+
+		propeller[0]();
+	};
+
+	this.stopLoading = function () {
+		_this.cache.loading = false;
+		_this.cache.loader.innerHTML = 'done';
+		_this.cache.loader.className += ' hide_element';
+		_this.cache.line.className = _this.cache.line.className.replace(/\s*hide_element\s*/, '');
+		_this.cache.commandInput.disabled = false;
+		_this.focus();
+	};
+
 	/* stuff */
 
 	this.log = function () {
@@ -138,7 +172,7 @@ window.cli = new function () {
 	}).bind(this);
 
 	this.run = (function (command) {
-		var _this = this;
+		var _this3 = this;
 
 		if (command) this.history.push(command.trim());
 		var commandObject = {
@@ -150,7 +184,8 @@ window.cli = new function () {
 		};
 
 		var pipeline = new Promise(function (resolve, reject) {
-			return resolve(commandObject);
+			_this3.startLoading();
+			resolve(commandObject);
 		});
 
 		this.workers.pre.forEach(function (ordered) {
@@ -166,7 +201,7 @@ window.cli = new function () {
 			return new Promise(function (resolve, reject) {
 				cli.log('promise command', commandObject);
 				var command;
-				if (commandObject.command && (command = _this.workers.commands[commandObject.command])) {
+				if (commandObject.command && (command = _this3.workers.commands[commandObject.command])) {
 					cli.log('promise run command', command);
 					return resolve(command.worker(commandObject) || commandObject);
 				}
@@ -185,7 +220,9 @@ window.cli = new function () {
 			});
 		});
 
-		return pipeline;
+		return pipeline.then(function (result) {
+			return _this3.stopLoading();
+		});
 	}).bind(this);
 
 	/**
@@ -590,6 +627,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 	});
 })(window.cli);
 
-(function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli\"><div onmouseup=\"cli.mouseUp()\" class=\"cli-panel show\"><div class=\"cli-history\"><span class=\"cli-buffer\"></span><span class=\"cli-loader hide_element\"></span></div><div class=\"cli-line\"><span class=\"cli-prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"cli-command\"/></div></div></div>", "body");})(window.cli)
+(function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli\"><div onmouseup=\"cli.mouseUp()\" class=\"cli-panel show\"><div class=\"cli-history\"><span class=\"cli-buffer\"></span></div><div class=\"cli-loader hide_element\"></div><div class=\"cli-line\"><span class=\"cli-prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"cli-command\"/></div></div></div>", "body");})(window.cli)
 
-!function(){var a=".cli {\n  max-height: 64%; }\n  .cli-panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 0.64s linear; }\n  .cli-panel.show {\n    height: 64%; }\n  .cli-history {\n    overflow: auto;\n    white-space: pre-wrap;\n    position: absolute;\n    bottom: 20px; }\n    .cli-history .cli-prompt {\n      display: inline;\n      width: auto; }\n  .cli-line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%;\n    display: table; }\n  .cli-prompt {\n    display: table-cell;\n    width: 1px; }\n  .cli-command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 9px;\n    width: 100%;\n    box-sizing: border-box;\n    display: table-cell; }\n  .cli .hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();
+!function(){var a=".cli {\n  max-height: 64%; }\n  .cli-panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 0.64s linear; }\n  .cli-panel.show {\n    height: 64%; }\n  .cli-history {\n    overflow: auto;\n    white-space: pre-wrap;\n    position: absolute;\n    bottom: 20px; }\n    .cli-history .cli-prompt {\n      display: inline;\n      width: auto; }\n  .cli-line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%;\n    display: table; }\n  .cli-prompt {\n    display: table-cell;\n    width: 1px; }\n  .cli-command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 9px;\n    width: 100%;\n    box-sizing: border-box;\n    display: table-cell; }\n  .cli-loader {\n    position: absolute;\n    bottom: 0;\n    height: 20px; }\n  .cli .hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();

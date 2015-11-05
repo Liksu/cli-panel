@@ -1,11 +1,14 @@
 var getList = function() {
 	return new Promise(resolve => setTimeout(function() {
-		resolve([
-			{title: 'Red', price: 152},
-			{title: 'Blue', price: 236},
-			{title: 'Green', price: 212}
-		]);
-	}, 1000));
+		cli.print('intermediate result');
+		setTimeout(function() {
+			resolve([
+				{title: 'Red', price: 152},
+				{title: 'Blue', price: 236},
+				{title: 'Green', price: 212}
+			]);
+		}, 5000);
+	}, 5000));
 };
 
 // example of self command

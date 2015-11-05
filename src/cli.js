@@ -3,7 +3,8 @@ window.cli = new (function() {
 		commandInput: null,
 		buffer: null,
 		panel: null,
-		show: false
+		show: false,
+		loading: false
 	};
 	this.history = [];
 	this.settings = {
@@ -46,8 +47,10 @@ window.cli = new (function() {
 		});
 
 		this.cache.panel = document.querySelector('.cli .cli-panel');
+		this.cache.line = this.cache.panel.querySelector('.cli-line');
 		this.cache.commandInput = this.cache.panel.querySelector('.cli .cli-line .cli-command');
 		this.cache.buffer = this.cache.panel.querySelector('.cli-buffer');
+		this.cache.loader = this.cache.panel.querySelector('.cli-loader');
 		this.cache.prompt = this.cache.panel.querySelector('.cli-prompt');
 		this.cache.prompt.innerHTML = this.settings.prompt;
 
@@ -111,6 +114,36 @@ window.cli = new (function() {
 		}, 0);
 	}.bind(this);
 
+	this.startLoading = () => {
+		this.cache.loading = true;
+		this.cache.loader.className = this.cache.loader.className.replace(/\s*hide_element\s*/, '');
+		this.cache.line.className += ' hide_element';
+		this.cache.commandInput.disabled = true;
+
+		var propeller = [
+			{char: '|',  duration: 100},
+			{char: '/',  duration:  80},
+			{char: '-',  duration: 100},
+			{char: '\\', duration:  80}
+		].map((info, i, arr) => function() {
+			this.cache.loader.innerHTML = info.char;
+			setTimeout(() => {
+				if (this.cache.loading) propeller[i === arr.length - 1 ? 0 : i + 1]();
+			}, info.duration);
+		}.bind(this));
+
+		propeller[0]();
+	};
+
+	this.stopLoading = () => {
+		this.cache.loading = false;
+		this.cache.loader.innerHTML = 'done';
+		this.cache.loader.className += ' hide_element';
+		this.cache.line.className = this.cache.line.className.replace(/\s*hide_element\s*/, '');
+		this.cache.commandInput.disabled = false;
+		this.focus();
+	};
+
 	/* stuff */
 
 	this.log = (...arg) => {
@@ -133,7 +166,10 @@ window.cli = new (function() {
 			result: null
 		};
 
-		var pipeline = new Promise((resolve, reject) => resolve(commandObject));
+		var pipeline = new Promise((resolve, reject) => {
+			this.startLoading();
+			resolve(commandObject);
+		});
 
 		this.workers.pre.forEach(ordered => ordered.forEach(processsor => {
 			cli.log('promise pre', processsor);
@@ -155,7 +191,7 @@ window.cli = new (function() {
 			pipeline = pipeline.then(commandObject => processsor.worker(commandObject) || commandObject);
 		}));
 
-		return pipeline;
+		return pipeline.then(result => this.stopLoading());
 	}.bind(this);
 
 	/**
