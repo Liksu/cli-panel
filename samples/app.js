@@ -21,16 +21,15 @@ cli.command('books_load', 'App command', function() {
 });
 
 // example of prompt change
-var updatePrompt = function() {
-	cli.cache.prompt.innerHTML = '<span class="bracket">[</span>'
-		+ '<span class="time">'
-		+ new Date().toJSON().replace(/^.+T([\d:]+).+$/, '$1')
-		+ '</span>'
-		+ '<span class="bracket">]</span>&nbsp;'
-		+ cli.settings.prompt
-};
-
 document.addEventListener("DOMContentLoaded", () => {
-	updatePrompt();
-	setInterval(updatePrompt, 1000);
+	setInterval(() => {
+		cli.setPrompt([
+			'<span class="bracket">[</span>',
+			'<span class="time">',
+			new Date().toJSON().replace(/^.+T([\d:]+).+$/, '$1'),
+			'</span>',
+			'<span class="bracket">]</span>&nbsp;',
+			cli.settings.prompt
+		].join(''));
+	}, 1000);
 });
