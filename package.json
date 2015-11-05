@@ -1,7 +1,7 @@
 {
   "name": "cli-panel",
-  "version": "0.7.0",
-  "description": "Command line interface for angular sites",
+  "version": "0.8.0",
+  "description": "Command line interface for sites",
   "main": "build/cli.min.js",
   "dependencies": {
     "babel-preset-es2015": "^6.0.15",

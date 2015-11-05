@@ -9,6 +9,7 @@ window.cli = new (function() {
 	this.history = [];
 	this.settings = {
 		prompt: '> ',
+		tab: '    ',
 		debug: 0
 	};
 	this.workers = {
@@ -170,7 +171,7 @@ window.cli = new (function() {
 	}.bind(this);
 
 	this.print = function(string) {
-		this.cache.buffer.innerHTML += ('' + string).replace(/\t/g, '    ') + '\n';
+		this.cache.buffer.innerHTML += ('' + string).replace(/\t/g, this.settings.tab) + '\n';
 	}.bind(this);
 
 	this.run = function(command) {
