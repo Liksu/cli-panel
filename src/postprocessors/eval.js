@@ -6,7 +6,9 @@ cli.postprocessor('eval', 'Run js code', commandObject => {
 		commandObject.result = eval(input);
 		cli.print(commandObject.result);
 		commandObject.input = '';
-	} catch(e) {}
+	} catch(e) {
+		cli.print(e.name + ': ' + e.message);
+	}
 
 	return commandObject;
 }, 1000);
