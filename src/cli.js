@@ -33,7 +33,7 @@ window.cli = new (function() {
 		};
 	}.bind(this);
 
-	document.addEventListener("DOMContentLoaded", function() {
+	this.init = function() {
 		var templates = this.templates;
 		var fragments = {};
 
@@ -59,7 +59,9 @@ window.cli = new (function() {
 		this.cache.prompt.innerHTML = this.settings.prompt;
 
 		this.toggle(this.cache.show);
-	}.bind(this));
+	}.bind(this);
+
+	document.addEventListener("DOMContentLoaded", this.init);
 
 	/* keyboard */
 
