@@ -33,7 +33,11 @@ window.cli = new (function() {
 		};
 	}.bind(this);
 
-	this.init = function() {
+	this.init = function(options) {
+		if (typeof options === 'object') {
+			Object.keys(options).forEach(key => this.settings[key] = options[key]);
+		}
+
 		var templates = this.templates;
 		var fragments = {};
 
