@@ -1,6 +1,6 @@
 /**
  * cli-panel - Command line interface for angular sites
- * @version v0.2.5
+ * @version v0.3.1
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -271,6 +271,7 @@ window.cli = new function () {
 	this.postprocessor = store.bind(this, 'post');
 	this.registerKey = store.bind(this, 'keys');
 }();
+window.cli.version = "0.3.1";
 
 'use strict';
 
@@ -285,6 +286,9 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 (function (cli) {
 	cli.command('help', 'Display this list', function (commandObject) {
 		cli.log('execute command help');
+		cli.print('Command line interface for sites.');
+		cli.print('Version: ' + cli.version);
+		cli.print('');
 		cli.print('List of available commands:');
 
 		Object.keys(cli.workers.commands).sort().forEach(function (command) {

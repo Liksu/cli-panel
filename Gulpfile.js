@@ -32,7 +32,8 @@ var srcCode = function() {
 		.pipe(size({showFiles: true}))
 		.pipe(babel({
 			presets: ['babel-preset-es2015', 'babel-preset-stage-0']
-		}));
+		}))
+		.pipe(footer('\nwindow.cli.version = "<%= pkg.version %>";', pkg));
 
 	var modules = gulp.src(['!src/cli.js', 'src/**/*.js'])
 		.pipe(plumber())
