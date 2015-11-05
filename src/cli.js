@@ -158,9 +158,9 @@ window.cli = new (function() {
 
 	/* API */
 
-	this.setPrompt = function(prompt) {
+	this.setPrompt = function(prompt, save) {
 		if (prompt === undefined) prompt = this.settings.prompt;
-		else this.settings.prompt = prompt;
+		else if (save) this.settings.prompt = prompt;
 
 		this.cache.prompt.innerHTML = prompt;
 	}.bind(this);
