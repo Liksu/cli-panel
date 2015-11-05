@@ -1,6 +1,6 @@
 /**
  * cli-panel - Command line interface for angular sites
- * @version v0.5.0
+ * @version v0.6.4
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -173,8 +173,8 @@ window.cli = new function () {
 
 	/* API */
 
-	this.setPrompt = (function (prompt) {
-		if (prompt === undefined) prompt = this.settings.prompt;else this.settings.prompt = prompt;
+	this.setPrompt = (function (prompt, save) {
+		if (prompt === undefined) prompt = this.settings.prompt;else if (save) this.settings.prompt = prompt;
 
 		this.cache.prompt.innerHTML = prompt;
 	}).bind(this);
@@ -292,7 +292,7 @@ window.cli = new function () {
 	this.postprocessor = store.bind(this, 'post');
 	this.registerKey = store.bind(this, 'keys');
 }();
-window.cli.version = "0.5.0";
+window.cli.version = "0.6.4";
 
 'use strict';
 
@@ -316,100 +316,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 			var descr = cli.workers.commands[command].description;
 			cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
 		});
-	});
-})(window.cli);
-(function (cli) {
-	cli.registerKey(9, 'Tab', function (event, isInCommandLine) {
-		cli.log('process key Tab for autocomplete');
-
-		if (!isInCommandLine) return;
-		event.preventDefault();
-
-		var line = cli.cache.commandInput.value;
-		line = new RegExp('^' + line);
-
-		var commands = Object.keys(cli.workers.commands).sort(function (a, b) {
-			return a.length - b.length;
-		}).filter(function (cmd) {
-			return line.test(cmd);
-		});
-
-		if (!commands.length) return;else if (commands.length === 1) cli.cache.commandInput.value = commands[0] + ' ';else cli.print(commands.join('\t'));
-	});
-})(window.cli);
-(function (cli) {
-	cli.registerKey(0, 'Echo', function (event, isInCommandLine) {
-		cli.log('echo pressed key', event.keyCode, event);
-	});
-})(window.cli);
-(function (cli) {
-	var lastCommand = '';
-	var historyScroll = 0;
-
-	function setCommand(command) {
-		cli.cache.commandInput.value = command;
-		cli.focus();
-	}
-
-	cli.registerKey(38, 'Up', function (event, isInCommandLine) {
-		cli.log('process key Up for history');
-
-		if (!isInCommandLine) return;
-		if (historyScroll == cli.history.length) return;
-
-		if (!historyScroll) lastCommand = cli.cache.commandInput.value;
-
-		historyScroll++;
-		if (historyScroll > cli.history.length) historyScroll = cli.history.length;
-
-		setCommand(cli.history[cli.history.length - historyScroll]);
-	});
-
-	cli.registerKey(40, 'Down', function (event, isInCommandLine) {
-		cli.log('process key Down for history');
-
-		if (!isInCommandLine) return;
-		if (!historyScroll) return;
-
-		historyScroll--;
-		var command = '';
-
-		if (historyScroll <= 0) {
-			historyScroll = 0;
-			command = lastCommand;
-		} else command = cli.history[cli.history.length - historyScroll];
-
-		setCommand(command);
-	});
-
-	cli.registerKey(13, 'Enter', function (event, isInCommandLine) {
-		cli.log('process key Enter for history');
-
-		lastCommand = '';
-		historyScroll = 0;
-	});
-})(window.cli);
-(function (cli) {
-	cli.registerKey(13, 'Enter', function (event, isInCommandLine) {
-		cli.log('process key Enter for run');
-
-		if (!isInCommandLine) return;
-
-		cli.print(cli.cache.prompt.outerHTML + cli.cache.commandInput.value);
-		cli.run(cli.cache.commandInput.value);
-
-		cli.cache.buffer.scrollTop = cli.cache.buffer.scrollHeight;
-		cli.cache.commandInput.value = '';
-	});
-})(window.cli);
-(function (cli) {
-	cli.registerKey(192, '`', function (event, isInCommandLine) {
-		cli.log('process key ` for show');
-
-		if (event.target.nodeName === 'INPUT' && !isInCommandLine) return;
-		if (isInCommandLine) event.preventDefault();
-
-		cli.toggle();
 	});
 })(window.cli);
 (function (cli) {
@@ -520,6 +426,100 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 
 		return commandObject;
 	}, 1000);
+})(window.cli);
+(function (cli) {
+	cli.registerKey(9, 'Tab', function (event, isInCommandLine) {
+		cli.log('process key Tab for autocomplete');
+
+		if (!isInCommandLine) return;
+		event.preventDefault();
+
+		var line = cli.cache.commandInput.value;
+		line = new RegExp('^' + line);
+
+		var commands = Object.keys(cli.workers.commands).sort(function (a, b) {
+			return a.length - b.length;
+		}).filter(function (cmd) {
+			return line.test(cmd);
+		});
+
+		if (!commands.length) return;else if (commands.length === 1) cli.cache.commandInput.value = commands[0] + ' ';else cli.print(commands.join('\t'));
+	});
+})(window.cli);
+(function (cli) {
+	cli.registerKey(0, 'Echo', function (event, isInCommandLine) {
+		cli.log('echo pressed key', event.keyCode, event);
+	});
+})(window.cli);
+(function (cli) {
+	var lastCommand = '';
+	var historyScroll = 0;
+
+	function setCommand(command) {
+		cli.cache.commandInput.value = command;
+		cli.focus();
+	}
+
+	cli.registerKey(38, 'Up', function (event, isInCommandLine) {
+		cli.log('process key Up for history');
+
+		if (!isInCommandLine) return;
+		if (historyScroll == cli.history.length) return;
+
+		if (!historyScroll) lastCommand = cli.cache.commandInput.value;
+
+		historyScroll++;
+		if (historyScroll > cli.history.length) historyScroll = cli.history.length;
+
+		setCommand(cli.history[cli.history.length - historyScroll]);
+	});
+
+	cli.registerKey(40, 'Down', function (event, isInCommandLine) {
+		cli.log('process key Down for history');
+
+		if (!isInCommandLine) return;
+		if (!historyScroll) return;
+
+		historyScroll--;
+		var command = '';
+
+		if (historyScroll <= 0) {
+			historyScroll = 0;
+			command = lastCommand;
+		} else command = cli.history[cli.history.length - historyScroll];
+
+		setCommand(command);
+	});
+
+	cli.registerKey(13, 'Enter', function (event, isInCommandLine) {
+		cli.log('process key Enter for history');
+
+		lastCommand = '';
+		historyScroll = 0;
+	});
+})(window.cli);
+(function (cli) {
+	cli.registerKey(13, 'Enter', function (event, isInCommandLine) {
+		cli.log('process key Enter for run');
+
+		if (!isInCommandLine) return;
+
+		cli.print(cli.cache.prompt.outerHTML + cli.cache.commandInput.value);
+		cli.run(cli.cache.commandInput.value);
+
+		cli.cache.buffer.scrollTop = cli.cache.buffer.scrollHeight;
+		cli.cache.commandInput.value = '';
+	});
+})(window.cli);
+(function (cli) {
+	cli.registerKey(192, '`', function (event, isInCommandLine) {
+		cli.log('process key ` for show');
+
+		if (event.target.nodeName === 'INPUT' && !isInCommandLine) return;
+		if (isInCommandLine) event.preventDefault();
+
+		cli.toggle();
+	});
 })(window.cli);
 (function (cli) {
 	function parse(str) {
@@ -654,4 +654,4 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 
 (function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli\"><div onmouseup=\"cli.mouseUp()\" class=\"cli-panel show\"><div class=\"cli-history\"><span class=\"cli-buffer\"></span></div><div class=\"cli-loader hide_element\"></div><div class=\"cli-line\"><span class=\"cli-prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"cli-command\"/></div></div></div>", "body");})(window.cli)
 
-!function(){var a=".cli {\n  max-height: 64%; }\n  .cli-panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 0.64s linear; }\n  .cli-panel.show {\n    height: 64%; }\n  .cli-history {\n    overflow: auto;\n    white-space: pre-wrap;\n    position: absolute;\n    bottom: 20px; }\n    .cli-history .cli-prompt {\n      display: inline;\n      width: auto; }\n  .cli-line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%;\n    display: table; }\n  .cli-prompt {\n    display: table-cell;\n    width: 1px; }\n  .cli-command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 9px;\n    width: 100%;\n    box-sizing: border-box;\n    display: table-cell; }\n  .cli-loader {\n    position: absolute;\n    bottom: 0;\n    height: 20px; }\n  .cli .hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();
+!function(){var a=".cli {\n  max-height: 64%;\n  z-index: 65535; }\n  .cli-panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 0.64s linear; }\n  .cli-panel.show {\n    height: 64%; }\n  .cli-history {\n    overflow: auto;\n    white-space: pre-wrap;\n    position: absolute;\n    bottom: 20px; }\n    .cli-history .cli-prompt {\n      display: inline;\n      width: auto; }\n  .cli-line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%;\n    display: table; }\n  .cli-prompt {\n    display: table-cell;\n    width: 1px; }\n  .cli-command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 9px;\n    width: 100%;\n    box-sizing: border-box;\n    display: table-cell; }\n  .cli-loader {\n    position: absolute;\n    bottom: 0;\n    height: 20px; }\n  .cli .hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();
