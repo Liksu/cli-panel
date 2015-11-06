@@ -46,6 +46,8 @@ window.cli = new (function() {
 			var selector = templates[name].selector;
 			if (!fragments[selector]) {
 				fragments[selector] = document.createElement('div');
+				fragments[selector].className = 'cli cli-holder';
+				fragments[selector].id = 'cli';
 				fragments[selector].innerHTML = '';
 			}
 			fragments[selector].innerHTML += templates[name].html;

@@ -1,4 +1,4 @@
-.cli {
+body #cli.cli.cli-holder {
 	max-height: 64%;
 	z-index: 65535;
 
@@ -17,6 +17,7 @@
 
 	&-panel.show {
 		height: 64%;
+		min-height: 64px;
 	}
 
 	&-history {
@@ -44,7 +45,7 @@
 		width: 1px;
 	}
 
-	&-command {
+	input[type=text]&-command {
 		background: none;
 		border: 0;
 		color: white;

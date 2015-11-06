@@ -1,6 +1,6 @@
 /**
  * cli-panel - Command line interface for sites
- * @version v0.8.0
+ * @version v0.8.1
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -62,6 +62,8 @@ window.cli = new function () {
 			var selector = templates[name].selector;
 			if (!fragments[selector]) {
 				fragments[selector] = document.createElement('div');
+				fragments[selector].className = 'cli cli-holder';
+				fragments[selector].id = 'cli';
 				fragments[selector].innerHTML = '';
 			}
 			fragments[selector].innerHTML += templates[name].html;
@@ -303,7 +305,7 @@ window.cli = new function () {
 	this.postprocessor = store.bind(this, 'post');
 	this.registerKey = store.bind(this, 'keys');
 }();
-window.cli.version = "0.8.0";
+window.cli.version = "0.8.1";
 
 'use strict';
 
@@ -328,6 +330,115 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 			cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
 		});
 	});
+})(window.cli);
+(function (cli) {
+	var priority = '** log * / - +'.split(' ');
+	var expression = {
+		'+': function _(a, b) {
+			return a + b;
+		},
+		'-': function _(a, b) {
+			return a - b;
+		},
+		'*': function _(a, b) {
+			return a * b;
+		},
+		'/': function _(a, b) {
+			return a / b;
+		},
+		'**': function _(a, b) {
+			return Math.pow(a, b);
+		},
+		'log': function log(a, b) {
+			return Math.log(a) / Math.log(b);
+		}
+	};
+
+	var signs = {
+		'++': '+ ',
+		'--': '+ ',
+		'+-': '- ',
+		'-+': '- '
+	};
+
+	var digit = '([-+]?(?:\\d*\\.)?\\d+(?:e[+-]?\\d+)?)';
+	var spacer_re = /(\d)([+-])([\d.])/g;
+
+	// calc the contents of the brackets
+	function evaluate(str) {
+		while (/[+-]{2}/.test(str)) str = str.replace(/([+-]{2})/, function (s) {
+			return signs[s];
+		});
+		while (spacer_re.test(str)) str = str.replace(spacer_re, '$1 $2 $3');
+
+		// normalize string
+		str = str.split(new RegExp(digit)).map(function (part) {
+			return part.trim();
+		}).filter(function (part) {
+			return part !== '';
+		}).map(function (part) {
+			return isNaN(+part) ? part : +part;
+		}).filter(function (part, i, arr) {
+			if (typeof part !== 'string') return true;
+			if (priority.indexOf(part) === -1) throw new SyntaxError('invalid operator ' + part);
+			return !(i === 0 || i === arr.length - 1);
+		}).join(' ');
+
+		// calc
+		priority.forEach(function (sign) {
+			var qsign = [''].concat(sign.split('')).join('\\');
+			var re = new RegExp(digit + ' (' + qsign + ') ' + digit);
+			while (new RegExp(qsign).test(str)) str = str.replace(re, function (match, a, sign, b) {
+				return expression[sign](+a, +b);
+			});
+		});
+
+		return +str;
+	}
+
+	function calc(input) {
+		// calculate brackets
+		while (/\(([^()]*)\)/.test(input)) input = input.replace(RegExp.lastMatch, evaluate(RegExp.$1));
+		// remove brackets stuff
+		input = input.replace(/[()]/g, '');
+		// final calculate
+		input = evaluate(input);
+		return +input;
+	}
+
+	cli.postprocessor('calc', 'Simple calculator', function (commandObject) {
+		cli.log('execute POST processor calc');
+		var input = commandObject.input;
+
+		if (!input) return commandObject;
+		if (!/^[log\s\d.e()/*+-]+$/.test(input)) return commandObject;
+
+		try {
+			commandObject.result = calc(input);
+			cli.print(commandObject.result);
+			commandObject.input = '';
+		} catch (e) {
+			cli.print(e.name + ': ' + e.message);
+		}
+
+		return commandObject;
+	});
+})(window.cli);
+(function (cli) {
+	cli.postprocessor('eval', 'Run js code', function (commandObject) {
+		var input = commandObject.input;
+		if (!input) return commandObject;
+
+		try {
+			commandObject.result = eval(input);
+			cli.print(commandObject.result);
+			commandObject.input = '';
+		} catch (e) {
+			cli.print(e.name + ': ' + e.message);
+		}
+
+		return commandObject;
+	}, 1000);
 })(window.cli);
 (function (cli) {
 	cli.registerKey(9, 'Tab', function (event, isInCommandLine) {
@@ -553,116 +664,7 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		return commandObject;
 	});
 })(window.cli);
-(function (cli) {
-	var priority = '** log * / - +'.split(' ');
-	var expression = {
-		'+': function _(a, b) {
-			return a + b;
-		},
-		'-': function _(a, b) {
-			return a - b;
-		},
-		'*': function _(a, b) {
-			return a * b;
-		},
-		'/': function _(a, b) {
-			return a / b;
-		},
-		'**': function _(a, b) {
-			return Math.pow(a, b);
-		},
-		'log': function log(a, b) {
-			return Math.log(a) / Math.log(b);
-		}
-	};
 
-	var signs = {
-		'++': '+ ',
-		'--': '+ ',
-		'+-': '- ',
-		'-+': '- '
-	};
+(function(cli){	cli.addHtml("templates/panel.html", "<div onmouseup=\"cli.mouseUp()\" class=\"cli-panel show\"><div class=\"cli-history\"><span class=\"cli-buffer\"></span></div><div class=\"cli-loader hide_element\"></div><div class=\"cli-line\"><span class=\"cli-prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"cli-command\"/></div></div>", "body");})(window.cli)
 
-	var digit = '([-+]?(?:\\d*\\.)?\\d+(?:e[+-]?\\d+)?)';
-	var spacer_re = /(\d)([+-])([\d.])/g;
-
-	// calc the contents of the brackets
-	function evaluate(str) {
-		while (/[+-]{2}/.test(str)) str = str.replace(/([+-]{2})/, function (s) {
-			return signs[s];
-		});
-		while (spacer_re.test(str)) str = str.replace(spacer_re, '$1 $2 $3');
-
-		// normalize string
-		str = str.split(new RegExp(digit)).map(function (part) {
-			return part.trim();
-		}).filter(function (part) {
-			return part !== '';
-		}).map(function (part) {
-			return isNaN(+part) ? part : +part;
-		}).filter(function (part, i, arr) {
-			if (typeof part !== 'string') return true;
-			if (priority.indexOf(part) === -1) throw new SyntaxError('invalid operator ' + part);
-			return !(i === 0 || i === arr.length - 1);
-		}).join(' ');
-
-		// calc
-		priority.forEach(function (sign) {
-			var qsign = [''].concat(sign.split('')).join('\\');
-			var re = new RegExp(digit + ' (' + qsign + ') ' + digit);
-			while (new RegExp(qsign).test(str)) str = str.replace(re, function (match, a, sign, b) {
-				return expression[sign](+a, +b);
-			});
-		});
-
-		return +str;
-	}
-
-	function calc(input) {
-		// calculate brackets
-		while (/\(([^()]*)\)/.test(input)) input = input.replace(RegExp.lastMatch, evaluate(RegExp.$1));
-		// remove brackets stuff
-		input = input.replace(/[()]/g, '');
-		// final calculate
-		input = evaluate(input);
-		return +input;
-	}
-
-	cli.postprocessor('calc', 'Simple calculator', function (commandObject) {
-		cli.log('execute POST processor calc');
-		var input = commandObject.input;
-
-		if (!input) return commandObject;
-		if (!/^[log\s\d.e()/*+-]+$/.test(input)) return commandObject;
-
-		try {
-			commandObject.result = calc(input);
-			cli.print(commandObject.result);
-			commandObject.input = '';
-		} catch (e) {
-			cli.print(e.name + ': ' + e.message);
-		}
-
-		return commandObject;
-	});
-})(window.cli);
-(function (cli) {
-	cli.postprocessor('eval', 'Run js code', function (commandObject) {
-		var input = commandObject.input;
-		if (!input) return commandObject;
-
-		try {
-			commandObject.result = eval(input);
-			cli.print(commandObject.result);
-			commandObject.input = '';
-		} catch (e) {
-			cli.print(e.name + ': ' + e.message);
-		}
-
-		return commandObject;
-	}, 1000);
-})(window.cli);
-
-(function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli\"><div onmouseup=\"cli.mouseUp()\" class=\"cli-panel show\"><div class=\"cli-history\"><span class=\"cli-buffer\"></span></div><div class=\"cli-loader hide_element\"></div><div class=\"cli-line\"><span class=\"cli-prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"cli-command\"/></div></div></div>", "body");})(window.cli)
-
-!function(){var a=".cli {\n  max-height: 64%;\n  z-index: 65535; }\n  .cli-panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 0.64s linear; }\n  .cli-panel.show {\n    height: 64%; }\n  .cli-history {\n    overflow: auto;\n    white-space: pre-wrap;\n    position: absolute;\n    bottom: 20px; }\n    .cli-history .cli-prompt {\n      display: inline;\n      width: auto; }\n  .cli-line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%;\n    display: table; }\n  .cli-prompt {\n    display: table-cell;\n    width: 1px; }\n  .cli-command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 9px;\n    width: 100%;\n    box-sizing: border-box;\n    display: table-cell; }\n  .cli-loader {\n    position: absolute;\n    bottom: 0;\n    height: 20px; }\n  .cli .hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();
+!function(){var a="body #cli.cli.cli-holder {\n  max-height: 64%;\n  z-index: 65535; }\n  body #cli.cli.cli-holder-panel {\n    height: 0;\n    position: absolute;\n    top: 0;\n    left: 0;\n    right: 0;\n    color: white;\n    font: 16px monospace;\n    background: rgba(0, 0, 0, 0.8);\n    line-height: 20px;\n    transition: height 0.64s linear; }\n  body #cli.cli.cli-holder-panel.show {\n    height: 64%;\n    min-height: 64px; }\n  body #cli.cli.cli-holder-history {\n    overflow: auto;\n    white-space: pre-wrap;\n    position: absolute;\n    bottom: 20px; }\n    body #cli.cli.cli-holder-history .cli-prompt {\n      display: inline;\n      width: auto; }\n  body #cli.cli.cli-holder-line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%;\n    display: table; }\n  body #cli.cli.cli-holder-prompt {\n    display: table-cell;\n    width: 1px; }\n  input[type=text]&-command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 9px;\n    width: 100%;\n    box-sizing: border-box;\n    display: table-cell; }\n  body #cli.cli.cli-holder-loader {\n    position: absolute;\n    bottom: 0;\n    height: 20px; }\n  body #cli.cli.cli-holder .hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();
