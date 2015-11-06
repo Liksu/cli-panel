@@ -1,0 +1,2 @@
+git show vanilla:build/cli.min.js > cli.min.js
+git show vanilla:samples/app.js > app.js
