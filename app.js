@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		cli.setPrompt([
 			'<span class="bracket">[</span>',
 			'<span class="time">',
-			new Date().toJSON().replace(/^.+T([\d:]+).+$/, '$1'),
+			new Date().toLocaleTimeString('arab', {hour12: false}),
 			'</span>',
 			'<span class="bracket">]</span>&nbsp;',
 			cli.settings.prompt
