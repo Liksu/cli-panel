@@ -1,4 +1,4 @@
-# ng-cli
+# cli-panel
 Command line interface for sites.
 
 # install
