@@ -1,21 +1,18 @@
-body #cli.cli.cli-holder {
-	max-height: 64%;
+body #cli.cli.cli-panel {
 	z-index: 65535;
+	top: 0;
+	left: 0;
+	max-height: 64%;
+	height: 0;
+	position: absolute;
+	right: 0;
+	color: white;
+	font: 16px monospace;
+	background: rgba(0, 0, 0, 0.8);
+	line-height: 20px;
+	transition: height 0.64s linear;
 
-	.cli-panel {
-		height: 0;
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		color: white;
-		font: 16px monospace;
-		background: rgba(0, 0, 0, 0.8);
-		line-height: 20px;
-		transition: height 0.64s linear;
-	}
-
-	.cli-panel.show {
+	&.show {
 		height: 64%;
 	}
 
@@ -24,6 +21,7 @@ body #cli.cli.cli-holder {
 		white-space: pre-wrap;
 		position: absolute;
 		bottom: 20px;
+		width: 100%;
 
 		.cli-prompt {
 			display: inline;

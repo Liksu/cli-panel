@@ -46,7 +46,7 @@ window.cli = new (function() {
 			var selector = templates[name].selector;
 			if (!fragments[selector]) {
 				fragments[selector] = document.createElement('div');
-				fragments[selector].className = 'cli cli-holder';
+				fragments[selector].className = 'cli cli-panel';
 				fragments[selector].id = 'cli';
 				fragments[selector].innerHTML = '';
 			}
@@ -57,10 +57,11 @@ window.cli = new (function() {
 			document.querySelector(selector).appendChild( fragments[selector] );
 		});
 
-		this.cache.panel = document.querySelector('.cli .cli-panel');
+		this.cache.panel = document.querySelector('.cli.cli-panel');
+		this.cache.panel.addEventListener('mouseup', this.mouseUp);
 		this.cache.line = this.cache.panel.querySelector('.cli-line');
 		this.cache.commandInput = this.cache.panel.querySelector('.cli .cli-line .cli-command');
-		this.cache.buffer = this.cache.panel.querySelector('.cli-buffer');
+		this.cache.buffer = this.cache.panel.querySelector('.cli-history');
 		this.cache.loader = this.cache.panel.querySelector('.cli-loader');
 		this.cache.prompt = this.cache.panel.querySelector('.cli-prompt');
 		this.setPrompt();
