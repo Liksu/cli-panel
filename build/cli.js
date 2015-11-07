@@ -1,5 +1,6 @@
 /**
  * cli-panel - Command line interface for sites
+ * @author Liksu
  * @version v0.8.4
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
