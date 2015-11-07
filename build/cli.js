@@ -1,6 +1,6 @@
 /**
  * cli-panel - Command line interface for sites
- * @version v0.8.3
+ * @version v0.8.4
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -306,7 +306,7 @@ window.cli = new function () {
 	this.postprocessor = store.bind(this, 'post');
 	this.registerKey = store.bind(this, 'keys');
 }();
-window.cli.version = "0.8.3";
+window.cli.version = "0.8.4";
 
 'use strict';
 
@@ -425,6 +425,115 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 
 		cli.toggle();
 	});
+})(window.cli);
+(function (cli) {
+	var priority = '** log * / - +'.split(' ');
+	var expression = {
+		'+': function _(a, b) {
+			return a + b;
+		},
+		'-': function _(a, b) {
+			return a - b;
+		},
+		'*': function _(a, b) {
+			return a * b;
+		},
+		'/': function _(a, b) {
+			return a / b;
+		},
+		'**': function _(a, b) {
+			return Math.pow(a, b);
+		},
+		'log': function log(a, b) {
+			return Math.log(a) / Math.log(b);
+		}
+	};
+
+	var signs = {
+		'++': '+ ',
+		'--': '+ ',
+		'+-': '- ',
+		'-+': '- '
+	};
+
+	var digit = '([-+]?(?:\\d*\\.)?\\d+(?:e[+-]?\\d+)?)';
+	var spacer_re = /(\d)([+-])([\d.])/g;
+
+	// calc the contents of the brackets
+	function evaluate(str) {
+		while (/[+-]{2}/.test(str)) str = str.replace(/([+-]{2})/, function (s) {
+			return signs[s];
+		});
+		while (spacer_re.test(str)) str = str.replace(spacer_re, '$1 $2 $3');
+
+		// normalize string
+		str = str.split(new RegExp(digit)).map(function (part) {
+			return part.trim();
+		}).filter(function (part) {
+			return part !== '';
+		}).map(function (part) {
+			return isNaN(+part) ? part : +part;
+		}).filter(function (part, i, arr) {
+			if (typeof part !== 'string') return true;
+			if (priority.indexOf(part) === -1) throw new SyntaxError('invalid operator ' + part);
+			return !(i === 0 || i === arr.length - 1);
+		}).join(' ');
+
+		// calc
+		priority.forEach(function (sign) {
+			var qsign = [''].concat(sign.split('')).join('\\');
+			var re = new RegExp(digit + ' (' + qsign + ') ' + digit);
+			while (new RegExp(qsign).test(str)) str = str.replace(re, function (match, a, sign, b) {
+				return expression[sign](+a, +b);
+			});
+		});
+
+		return +str;
+	}
+
+	function calc(input) {
+		// calculate brackets
+		while (/\(([^()]*)\)/.test(input)) input = input.replace(RegExp.lastMatch, evaluate(RegExp.$1));
+		// remove brackets stuff
+		input = input.replace(/[()]/g, '');
+		// final calculate
+		input = evaluate(input);
+		return +input;
+	}
+
+	cli.postprocessor('calc', 'Simple calculator', function (commandObject) {
+		cli.log('execute POST processor calc');
+		var input = commandObject.input;
+
+		if (!input) return commandObject;
+		if (!/^[log\s\d.e()/*+-]+$/.test(input)) return commandObject;
+
+		try {
+			commandObject.result = calc(input);
+			cli.print(commandObject.result);
+			commandObject.input = '';
+		} catch (e) {
+			cli.print(e.name + ': ' + e.message);
+		}
+
+		return commandObject;
+	});
+})(window.cli);
+(function (cli) {
+	cli.postprocessor('eval', 'Run js code', function (commandObject) {
+		var input = commandObject.input;
+		if (!input) return commandObject;
+
+		try {
+			commandObject.result = eval(input);
+			cli.print(commandObject.result);
+			commandObject.input = '';
+		} catch (e) {
+			cli.print(e.name + ': ' + e.message);
+		}
+
+		return commandObject;
+	}, 1000);
 })(window.cli);
 (function (cli) {
 	function parse(str) {
@@ -555,115 +664,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		cli.log('argv result', commandObject);
 		return commandObject;
 	});
-})(window.cli);
-(function (cli) {
-	var priority = '** log * / - +'.split(' ');
-	var expression = {
-		'+': function _(a, b) {
-			return a + b;
-		},
-		'-': function _(a, b) {
-			return a - b;
-		},
-		'*': function _(a, b) {
-			return a * b;
-		},
-		'/': function _(a, b) {
-			return a / b;
-		},
-		'**': function _(a, b) {
-			return Math.pow(a, b);
-		},
-		'log': function log(a, b) {
-			return Math.log(a) / Math.log(b);
-		}
-	};
-
-	var signs = {
-		'++': '+ ',
-		'--': '+ ',
-		'+-': '- ',
-		'-+': '- '
-	};
-
-	var digit = '([-+]?(?:\\d*\\.)?\\d+(?:e[+-]?\\d+)?)';
-	var spacer_re = /(\d)([+-])([\d.])/g;
-
-	// calc the contents of the brackets
-	function evaluate(str) {
-		while (/[+-]{2}/.test(str)) str = str.replace(/([+-]{2})/, function (s) {
-			return signs[s];
-		});
-		while (spacer_re.test(str)) str = str.replace(spacer_re, '$1 $2 $3');
-
-		// normalize string
-		str = str.split(new RegExp(digit)).map(function (part) {
-			return part.trim();
-		}).filter(function (part) {
-			return part !== '';
-		}).map(function (part) {
-			return isNaN(+part) ? part : +part;
-		}).filter(function (part, i, arr) {
-			if (typeof part !== 'string') return true;
-			if (priority.indexOf(part) === -1) throw new SyntaxError('invalid operator ' + part);
-			return !(i === 0 || i === arr.length - 1);
-		}).join(' ');
-
-		// calc
-		priority.forEach(function (sign) {
-			var qsign = [''].concat(sign.split('')).join('\\');
-			var re = new RegExp(digit + ' (' + qsign + ') ' + digit);
-			while (new RegExp(qsign).test(str)) str = str.replace(re, function (match, a, sign, b) {
-				return expression[sign](+a, +b);
-			});
-		});
-
-		return +str;
-	}
-
-	function calc(input) {
-		// calculate brackets
-		while (/\(([^()]*)\)/.test(input)) input = input.replace(RegExp.lastMatch, evaluate(RegExp.$1));
-		// remove brackets stuff
-		input = input.replace(/[()]/g, '');
-		// final calculate
-		input = evaluate(input);
-		return +input;
-	}
-
-	cli.postprocessor('calc', 'Simple calculator', function (commandObject) {
-		cli.log('execute POST processor calc');
-		var input = commandObject.input;
-
-		if (!input) return commandObject;
-		if (!/^[log\s\d.e()/*+-]+$/.test(input)) return commandObject;
-
-		try {
-			commandObject.result = calc(input);
-			cli.print(commandObject.result);
-			commandObject.input = '';
-		} catch (e) {
-			cli.print(e.name + ': ' + e.message);
-		}
-
-		return commandObject;
-	});
-})(window.cli);
-(function (cli) {
-	cli.postprocessor('eval', 'Run js code', function (commandObject) {
-		var input = commandObject.input;
-		if (!input) return commandObject;
-
-		try {
-			commandObject.result = eval(input);
-			cli.print(commandObject.result);
-			commandObject.input = '';
-		} catch (e) {
-			cli.print(e.name + ': ' + e.message);
-		}
-
-		return commandObject;
-	}, 1000);
 })(window.cli);
 
 (function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli-history\"></div><div class=\"cli-loader hide_element\"></div><div class=\"cli-line\"><span class=\"cli-prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"cli-command\"/></div>", "body");})(window.cli)
