@@ -1,4 +1,4 @@
-window.cli = new (function() {
+function cli() {
 	this.cache = {
 		commandInput: null,
 		buffer: null,
@@ -266,5 +266,4 @@ window.cli = new (function() {
 	this.preprocessor = store.bind(this, 'pre');
 	this.postprocessor = store.bind(this, 'post');
 	this.registerKey = store.bind(this, 'keys');
-
-})();
+}

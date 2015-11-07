@@ -6,7 +6,6 @@ var rename = require("gulp-rename");
 var gulpif = require('gulp-if');
 var header = require('gulp-header');
 var indent = require("gulp-indent");
-var footer = require('gulp-footer');
 var babel = require('gulp-babel');
 var plumber = require('gulp-plumber');
 var sass = require('gulp-sass');
@@ -16,6 +15,7 @@ var size = require('gulp-size');
 var jade = require('gulp-jade');
 var debug = require('gulp-debug');
 var streamqueue = require('streamqueue');
+var wrap = require("gulp-wrap");
 
 var pkg = {pkg: require('./package.json')};
 var banner = ['/**',
@@ -31,17 +31,17 @@ var srcCode = function() {
 	var cli = gulp.src('src/cli.js')
 		.pipe(plumber())
 		.pipe(size({showFiles: true}))
+		.pipe(wrap('window.cli = new (<%= contents %>)();'))
 		.pipe(babel({
 			presets: ['babel-preset-es2015', 'babel-preset-stage-0']
 		}))
-		.pipe(footer('\nwindow.cli.version = "<%= pkg.version %>";', pkg));
+		.pipe(wrap('<%= contents %>\nwindow.cli.version = "<%= pkg.version %>";', pkg));
 
 	var modules = gulp.src(['!src/cli.js', 'src/**/*.js'])
 		.pipe(plumber())
 		.pipe(size({showFiles: true}))
-		.pipe(header('(cli => {\n'))
 		.pipe(indent({tabs: true, amount: 1}))
-		.pipe(footer('\n})(window.cli);'))
+		.pipe(wrap('(cli => {\n<%= contents %>\n})(window.cli);'))
 		.pipe(concat('code.js'))
 		.pipe(babel({
 			presets: ['babel-preset-es2015', 'babel-preset-stage-0']
@@ -111,7 +111,3 @@ gulp.task('sample', ['default', 'watch'], function(cb) {
 	});
 	cb();
 });
-
-/* angular
-var ngAnnotate = require('gulp-ng-annotate');
-*/
