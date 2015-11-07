@@ -16,6 +16,7 @@ var jade = require('gulp-jade');
 var debug = require('gulp-debug');
 var streamqueue = require('streamqueue');
 var wrap = require("gulp-wrap");
+var ngAnnotate = require('gulp-ng-annotate');
 
 var pkg = {pkg: require('./package.json')};
 var banner = ['/**',
@@ -27,14 +28,16 @@ var banner = ['/**',
 	' */',
 	''].join('\n');
 
+var babel_conf = {
+	presets: ['babel-preset-es2015', 'babel-preset-stage-0']
+};
+
 var srcCode = function() {
 	var cli = gulp.src('src/cli.js')
 		.pipe(plumber())
 		.pipe(size({showFiles: true}))
 		.pipe(wrap('// cli.js\nwindow.cli = new (<%= contents %>)();'))
-		.pipe(babel({
-			presets: ['babel-preset-es2015', 'babel-preset-stage-0']
-		}))
+		.pipe(babel(babel_conf))
 		.pipe(wrap('<%= contents %>\nwindow.cli.version = "<%= pkg.version %>";', pkg));
 
 	var modules = gulp.src(['!src/cli.js', 'src/**/*.js'])
@@ -43,9 +46,7 @@ var srcCode = function() {
 		.pipe(indent({tabs: true, amount: 1}))
 		.pipe(wrap('\n// <%= file.path.replace(file.base, "") %>\n(cli => {\n<%= contents %>\n})(window.cli);'))
 		.pipe(concat('code.js'))
-		.pipe(babel({
-			presets: ['babel-preset-es2015', 'babel-preset-stage-0']
-		}));
+		.pipe(babel(babel_conf));
 
 	return streamqueue({objectMode: true}, cli, modules);
 };
@@ -71,22 +72,8 @@ var srcTemplates = function() {
 		}))
 };
 
-gulp.task('clean', function () {
-	return gulp.src('build', {read: false})
-		.pipe(clean());
-});
-
-gulp.task('default', ['clean'], function () {
-	return streamqueue({objectMode: true}
-			, srcCode()
-			, srcTemplates()
-			, srcStyle()
-		)
-		.pipe(plumber())
-		.pipe(concat('cli.js', {newLine: '\n\n'}))
-		.pipe(header(banner, pkg))
-		.pipe(gulp.dest('build'))
-
+var minify = function (stream) {
+	return stream
 		.pipe(uglify({
 			compress: {
 				drop_console: true,
@@ -95,7 +82,39 @@ gulp.task('default', ['clean'], function () {
 		}))
 		.pipe(header(banner, pkg))
 		.pipe(rename({suffix: '.min'}))
-		.pipe(gulp.dest('build'))
+		.pipe(gulp.dest('build'));
+};
+
+gulp.task('clean', function () {
+	return gulp.src('build', {read: false})
+		.pipe(clean());
+});
+
+gulp.task('default', ['clean'], function () {
+	var sources = streamqueue({objectMode: true}
+			, srcCode()
+			, srcTemplates()
+			, srcStyle()
+		)
+		.pipe(plumber())
+		.pipe(concat('cli.js', {newLine: '\n\n'}))
+		.pipe(header(banner, pkg))
+		.pipe(gulp.dest('build'));
+
+	var angular = gulp.src('wrappers/angular/*.js')
+		.pipe(plumber())
+		.pipe(size({showFiles: true}))
+		.pipe(ngAnnotate())
+		.pipe(babel(babel_conf));
+
+	angular = streamqueue({objectMode: true}, sources, angular)
+		.pipe(concat('cli.angular.js', {newLine: '\n\n'}))
+		.pipe(gulp.dest('build'));
+
+	return streamqueue({objectMode: true}
+		, minify(sources)
+		, minify(angular)
+	);
 });
 
 gulp.task('watch', ['default'], function(cb) {

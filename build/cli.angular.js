@@ -690,3 +690,21 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 (function(cli){	cli.addHtml("templates/panel.html", "<div class=\"cli-history\"></div><div class=\"cli-loader hide_element\"></div><div class=\"cli-line\"><span class=\"cli-prompt\"></span><input type=\"text\" autofocus=\"autofocus\" class=\"cli-command\"/></div>", "body");})(window.cli)
 
 !function(){var a="body #cli.cli.cli-panel {\n  z-index: 65535;\n  top: 0;\n  left: 0;\n  max-height: 64%;\n  height: 0;\n  position: absolute;\n  right: 0;\n  color: white;\n  font: 16px monospace;\n  background: rgba(0, 0, 0, 0.8);\n  line-height: 20px;\n  transition: height 0.64s linear; }\n  body #cli.cli.cli-panel.show {\n    height: 64%; }\n  body #cli.cli.cli-panel .cli-history {\n    overflow: auto;\n    white-space: pre-wrap;\n    position: absolute;\n    bottom: 20px;\n    width: 100%; }\n    body #cli.cli.cli-panel .cli-history .cli-prompt {\n      display: inline;\n      width: auto; }\n  body #cli.cli.cli-panel .cli-line {\n    position: absolute;\n    bottom: 0;\n    height: 20px;\n    width: 100%;\n    display: table; }\n  body #cli.cli.cli-panel .cli-prompt {\n    display: table-cell;\n    width: 1px; }\n  body #cli.cli.cli-panel input[type=text].cli-command {\n    background: none;\n    border: 0;\n    color: white;\n    outline: none;\n    font: 16px monospace;\n    padding-left: 9px;\n    width: 100%;\n    box-sizing: border-box;\n    display: table-cell; }\n  body #cli.cli.cli-panel .cli-loader {\n    position: absolute;\n    bottom: 0;\n    height: 20px; }\n  body #cli.cli.cli-panel .hide_element {\n    display: none; }\n",b=document.createElement("style");b.type="text/css",b.styleSheet?b.styleSheet.cssText=a:b.appendChild(document.createTextNode(a)),(document.head||document.getElementsByTagName("head")[0]).appendChild(b)}();
+
+'use strict';
+
+angular.module('cli', []).factory('$cli', function () {
+  return window.cli;
+});
+
+//angular.module('cli').run(function($cli) {
+//	var services = angular.modules
+//		.filter(function(module) { return module !== 'cli' })
+//		.reduce(function(list, module) { return list.concat(angular.module(module)._invokeQueue) }, [])
+//		.filter(function(item) { return item[1] === 'service' })
+//		.map(function(item) { return item[2][0] })
+//		.forEach(function(service) {
+//			//$cli.command(service, )
+//		})
+//});
+"use strict";
