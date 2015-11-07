@@ -31,7 +31,7 @@ var srcCode = function() {
 	var cli = gulp.src('src/cli.js')
 		.pipe(plumber())
 		.pipe(size({showFiles: true}))
-		.pipe(wrap('window.cli = new (<%= contents %>)();'))
+		.pipe(wrap('// cli.js\nwindow.cli = new (<%= contents %>)();'))
 		.pipe(babel({
 			presets: ['babel-preset-es2015', 'babel-preset-stage-0']
 		}))
@@ -41,7 +41,7 @@ var srcCode = function() {
 		.pipe(plumber())
 		.pipe(size({showFiles: true}))
 		.pipe(indent({tabs: true, amount: 1}))
-		.pipe(wrap('(cli => {\n<%= contents %>\n})(window.cli);'))
+		.pipe(wrap('\n// <%= file.path.replace(file.base, "") %>\n(cli => {\n<%= contents %>\n})(window.cli);'))
 		.pipe(concat('code.js'))
 		.pipe(babel({
 			presets: ['babel-preset-es2015', 'babel-preset-stage-0']
