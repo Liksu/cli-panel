@@ -1,7 +1,7 @@
 /**
  * cli-panel - Command line interface for sites
  * @author Liksu
- * @version v0.9.0
+ * @version v0.9.1
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -13,6 +13,7 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 window.cli = new function cli() {
 	var _this2 = this;
 
+	var cli = this;
 	this.cache = {
 		commandInput: null,
 		buffer: null,
@@ -184,7 +185,7 @@ window.cli = new function cli() {
 			arg[_key] = arguments[_key];
 		}
 
-		if (cli.settings.debug) console.log.apply(console, arg);
+		if (_this2.settings.debug) console.log.apply(console, arg);
 	};
 
 	/* API */
@@ -308,7 +309,7 @@ window.cli = new function cli() {
 	this.postprocessor = store.bind(this, 'post');
 	this.registerKey = store.bind(this, 'keys');
 }();
-window.cli.version = "0.9.0";
+window.cli.version = "0.9.1";
 
 'use strict';
 

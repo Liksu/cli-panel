@@ -1,4 +1,5 @@
 function cli() {
+	var cli = this;
 	this.cache = {
 		commandInput: null,
 		buffer: null,
@@ -161,7 +162,7 @@ function cli() {
 	/* stuff */
 
 	this.log = (...arg) => {
-		if (cli.settings.debug) console.log.apply(console, arg);
+		if (this.settings.debug) console.log.apply(console, arg);
 	};
 
 	/* API */
