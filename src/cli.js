@@ -1,4 +1,4 @@
-function cli() {
+function CLI() {
 	var cli = this;
 	this.cache = {
 		commandInput: null,
