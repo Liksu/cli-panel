@@ -3,8 +3,8 @@ cli.postprocessor('eval', 'Run js code', commandObject => {
 	if (!input) return commandObject;
 
 	try {
-		commandObject.result = eval(input);
-		cli.print(commandObject.result);
+		var result = commandObject.result = new Function('return ' + input)();
+		cli.print(typeof result !== 'object' ? result : JSON.stringify(result));
 		commandObject.input = '';
 	} catch(e) {
 		cli.print(e.name + ': ' + e.message);
