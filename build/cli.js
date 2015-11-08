@@ -1,7 +1,7 @@
 /**
  * cli-panel - Command line interface for sites
  * @author Liksu
- * @version v0.9.3
+ * @version v0.10.0-alpha.1
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -10,7 +10,7 @@
 function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
 
 // cli.js
-window.cli = new function cli() {
+window.cli = new function CLI() {
 	var _this2 = this;
 
 	var cli = this;
@@ -309,7 +309,7 @@ window.cli = new function cli() {
 	this.postprocessor = store.bind(this, 'post');
 	this.registerKey = store.bind(this, 'keys');
 }();
-window.cli.version = "0.9.3";
+window.cli.version = "0.10.0-alpha.1";
 
 'use strict';
 
@@ -545,8 +545,8 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		if (!input) return commandObject;
 
 		try {
-			commandObject.result = eval(input);
-			cli.print(commandObject.result);
+			var result = commandObject.result = new Function('return ' + input)();
+			cli.print((typeof result === 'undefined' ? 'undefined' : _typeof(result)) !== 'object' ? result : JSON.stringify(result));
 			commandObject.input = '';
 		} catch (e) {
 			cli.print(e.name + ': ' + e.message);

@@ -1,7 +1,7 @@
 /**
  * cli-panel - Command line interface for sites
  * @author Liksu
- * @version v0.9.3
+ * @version v0.10.0-alpha.1
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -10,7 +10,7 @@
 function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
 
 // cli.js
-window.cli = new function cli() {
+window.cli = new function CLI() {
 	var _this2 = this;
 
 	var cli = this;
@@ -309,7 +309,7 @@ window.cli = new function cli() {
 	this.postprocessor = store.bind(this, 'post');
 	this.registerKey = store.bind(this, 'keys');
 }();
-window.cli.version = "0.9.3";
+window.cli.version = "0.10.0-alpha.1";
 
 'use strict';
 
@@ -545,8 +545,8 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		if (!input) return commandObject;
 
 		try {
-			commandObject.result = eval(input);
-			cli.print(commandObject.result);
+			var result = commandObject.result = new Function('return ' + input)();
+			cli.print((typeof result === 'undefined' ? 'undefined' : _typeof(result)) !== 'object' ? result : JSON.stringify(result));
 			commandObject.input = '';
 		} catch (e) {
 			cli.print(e.name + ': ' + e.message);
@@ -694,18 +694,55 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 
 'use strict';
 
-angular.module('cli', []).factory('$cli', function () {
-  return window.cli;
-});
+// wrappers/angular/cli.js
+(function (cli) {
+	(function (original) {
+		angular.modules = [];
+		angular.module = function () {
+			if (arguments.length > 1) angular.modules.push(arguments[0]);
+			return original.apply(null, arguments);
+		};
+	})(angular.module);
 
-//angular.module('cli').run(function($cli) {
-//	var services = angular.modules
-//		.filter(function(module) { return module !== 'cli' })
-//		.reduce(function(list, module) { return list.concat(angular.module(module)._invokeQueue) }, [])
-//		.filter(function(item) { return item[1] === 'service' })
-//		.map(function(item) { return item[2][0] })
-//		.forEach(function(service) {
-//			//$cli.command(service, )
-//		})
-//});
+	angular.module('cli', []).factory('$cli', function () {
+		return window.cli;
+	});
+})(window.cli);
+
 "use strict";
+
+// wrappers/angular/services.js
+(function (cli) {
+	angular.module('cli').run(["$cli", "$rootScope", function ($cli, $rootScope) {
+		var store = { controller: {} };
+		var modules = angular.modules.filter(function (module) {
+			return module !== 'cli';
+		}).reduce(function (list, module) {
+			return list.concat(angular.module(module)._invokeQueue);
+		}, []);
+
+		var services = modules.filter(function (item) {
+			return item[1] === 'service';
+		}).map(function (item) {
+			return item[2][0];
+		});
+
+		var controllers = modules.filter(function (item) {
+			return item[1] === 'controller' || item[0] === '$controllerProvider';
+		}).map(function (item) {
+			return store.controller[item[2][0]] = item[2][1], item[2][0];
+		});
+		//.map(function(item) { return item[2][0] });
+
+		var directives = modules.filter(function (item) {
+			return item[1] === 'directive';
+		}).map(function (item) {
+			return item[2][0];
+		});
+
+		console.log('services:', services, 'controllers:', controllers, 'directives:', directives);
+		console.log('store:', store);
+		console.log('modules:', modules);
+		console.log('$rootScope:', $rootScope);
+	}]);
+})(window.cli);
