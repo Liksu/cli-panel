@@ -101,10 +101,12 @@ gulp.task('default', ['clean'], function () {
 		.pipe(header(banner, pkg))
 		.pipe(gulp.dest('build'));
 
-	var angular = gulp.src('wrappers/angular/*.js')
+	var angular = gulp.src(['wrappers/angular/cli.js', 'wrappers/angular/*.js'])
 		.pipe(plumber())
 		.pipe(size({showFiles: true}))
 		.pipe(ngAnnotate())
+		.pipe(indent({tabs: true, amount: 1}))
+		.pipe(wrap('\n// <%= file.path.replace(file.base, "wrappers/angular/") %>\n(cli => {\n<%= contents %>\n})(window.cli);'))
 		.pipe(babel(babel_conf));
 
 	angular = streamqueue({objectMode: true}, sources, angular)
@@ -118,7 +120,7 @@ gulp.task('default', ['clean'], function () {
 });
 
 gulp.task('watch', ['default'], function(cb) {
-	gulp.watch(['src/**/*.*'], ['default']);
+	gulp.watch(['src/**/*.*', 'wrappers/**/*.*'], ['default']);
 	cb();
 });
 
