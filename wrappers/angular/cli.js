@@ -6,4 +6,8 @@
 	};
 })(angular.module);
 
-angular.module('cli', []).factory('$cli', () => window.cli);
+angular.module('cli', []).factory('$cli', () => {
+	var cli = window.cli;
+	cli.controllers = {};
+	return cli;
+});
