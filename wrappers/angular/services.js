@@ -21,11 +21,8 @@ angular.module('cli').run(function($cli, $rootScope, $injector) {
 		.map(item => (store.directive[item[2][0]] = item[2][1], item[2][0]));
 		//.map(function(item) { return item[2][0] });
 
-	window.cli.ngServices = [];
 	services.push('$http', '$q');
-	$injector.invoke(Function.apply(null, services.concat('window.cli.ngServices = arguments')));
-	services.forEach((name, i) => window.cli.services[name] = window.cli.ngServices[i]);
-	delete window.cli.ngServices;
+	services.forEach(name => window.cli.services[name] = $injector.get(name));
 
 	//console.log(angular.modules);
 	//angular.module('cli').factory('cliServiceStorage', Function.apply(angular.module('cli'), services.concat('console.warn("arguments", arguments); return {}')));
