@@ -1,15 +1,15 @@
-angular.module('cli').run(function($cli, $rootScope) {
+angular.module('cli').run(function($cli, $rootScope, $injector) {
 	console.log('list or registred modules', angular.modules);
-	angular.modules = angular.modules.filter(function(module) { return module !== 'cli' });
 
-	var store = {controller: {}};
+	var store = {controller: {}, directive: {}, service: {}};
 	window.store = store;
 	var modules = angular.modules
 		.reduce(function(list, module) { return list.concat(angular.module(module)._invokeQueue) }, []);
 
 	var services = modules
 		.filter(function(item) { return item[1] === 'service' })
-		.map(function(item) { return item[2][0] });
+		.map(item => (store.service[item[2][0]] = item[2][1], item[2][0]));
+		//.map(function(item) { return item[2][0] });
 
 	var controllers = modules
 		.filter(function(item) { return item[1] === 'controller' || item[0] === '$controllerProvider' })
@@ -18,10 +18,16 @@ angular.module('cli').run(function($cli, $rootScope) {
 
 	var directives = modules
 		.filter(function(item) { return item[1] === 'directive' })
-		.map(function(item) { return item[2][0] });
+		.map(item => (store.directive[item[2][0]] = item[2][1], item[2][0]));
+		//.map(function(item) { return item[2][0] });
+
+	window.cli.ngServices = [];
+	services.push('$http', '$q');
+	$injector.invoke(Function.apply(null, services.concat('window.cli.ngServices = arguments')));
+	services.forEach((name, i) => window.cli.services[name] = window.cli.ngServices[i]);
+	delete window.cli.ngServices;
 
 	//console.log(angular.modules);
-	//console.warn(angular.module(angular.modules[0]));
 	//angular.module('cli').factory('cliServiceStorage', Function.apply(angular.module('cli'), services.concat('console.warn("arguments", arguments); return {}')));
 
 	//directives.forEach((name) => {
@@ -39,10 +45,36 @@ angular.module('cli').run(function($cli, $rootScope) {
 });
 
 angular.module('cli').config(function ($provide) {
+	angular.modules = angular.modules.filter(function(module) { return module !== 'cli' });
+	console.log('CLI config', angular.modules);
+
+	var modules = angular.modules
+		.reduce(function(list, module) { return list.concat(angular.module(module)._invokeQueue) }, []);
+
+	var directives = modules
+		.filter(function(item) { return item[1] === 'directive' })
+		.map(function(item) { return item[2][0] });
+
+	//directives.forEach((name) => {
+	//	$provide.decorator(name + 'Directive', ($delegate, $parse) => {
+	//		console.log($delegate, $parse);
+	//		return $delegate;
+	//	})
+	//});
+
+
+	//var _directive = angular.module(angular.modules[0]).directive;
+	//angular.module(angular.modules[0]).directive = function( name, factory ) {
+	//	console.log('set directive', name, factory);
+	//	$compileProvider.directive( name, factory );
+	//	return( this );
+	//};
+
 	$provide.decorator('$controller', function ($delegate) {
 		return function(constructor, locals, later, indent) {
-			console.log('hey', constructor, locals);
+			console.warn('hey', constructor, locals);
 			if (typeof constructor == "string") window.cli.controllers[constructor] = locals.$scope;
+			else if (typeof constructor == "function") console.info('doh', constructor.prototype);
 			return $delegate(constructor, locals, later, indent);
 		}
 	});

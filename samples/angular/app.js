@@ -32,9 +32,9 @@ angular
 			scope: {
 				param: '=?'
 			},
-			controller: function ($scope) {
+			link: function ($scope) {
 				books.getList().then(books => $scope.books = books);
-				console.log('directive scope:', $scope);
+				console.log('INFO, directive loaded with scope:', $scope);
 			}
 		}
 	});

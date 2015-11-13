@@ -7,7 +7,10 @@
 })(angular.module);
 
 angular.module('cli', []).factory('$cli', () => {
+	console.log('CLI factory');
 	var cli = window.cli;
 	cli.controllers = {};
+	cli.directives = {};
+	cli.services = {};
 	return cli;
 });
