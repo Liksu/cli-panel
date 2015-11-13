@@ -63,7 +63,18 @@ angular.module('cli').config(function ($provide) {
 			angular.module(module).config(function ($provide) {
 				$provide.decorator(name + 'Directive', function ($delegate) {
 					console.log('DIRECTIVE', name, $delegate.scope, $delegate);
-					window.cli.directives[name] = $delegate.scope;
+
+					$delegate[0].compile = function() {
+						return function (scope, element, attrs) {
+							$delegate[0].link.apply(this, arguments);
+							console.log('COMPILE ' + name, scope, element, attrs);
+
+							if (!window.cli.directives[name]) window.cli.directives[name] = [];
+							window.cli.directives[name].push(scope);
+						};
+					};
+
+
 					return $delegate;
 				});
 			});
