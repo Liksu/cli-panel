@@ -45,12 +45,31 @@ angular.module('cli').config(function ($provide) {
 	angular.modules = angular.modules.filter(function(module) { return module !== 'cli' });
 	console.log('CLI config', angular.modules);
 
-	var modules = angular.modules
-		.reduce(function(list, module) { return list.concat(angular.module(module)._invokeQueue) }, []);
+	//var directives = modules
+	//	.filter(function(item) { return item[1] === 'directive' })
+	//	.map(function(item) { return item[2][0] });
 
-	var directives = modules
-		.filter(function(item) { return item[1] === 'directive' })
-		.map(function(item) { return item[2][0] });
+	angular.modules.forEach(module => {
+		console.log('get directives for', module);
+		var directives = angular
+			.module(module)
+			._invokeQueue
+			.filter(function(item) { return item[1] === 'directive' })
+			.map(function(item) { return item[2][0] });
+
+		console.log(module, 'directives', directives);
+
+		directives.forEach(name => {
+			angular.module(module).config(function ($provide) {
+				$provide.decorator(name + 'Directive', function ($delegate) {
+					console.log('DIRECTIVE', name, $delegate.scope, $delegate);
+					window.cli.directives[name] = $delegate.scope;
+					return $delegate;
+				});
+			});
+		});
+	});
+
 
 	//directives.forEach((name) => {
 	//	$provide.decorator(name + 'Directive', ($delegate, $parse) => {

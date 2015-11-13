@@ -315,6 +315,30 @@ window.cli.version = "0.10.0-alpha.2";
 
 function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
 
+// commands\clear.js
+(function (cli) {
+	cli.command('clear', 'Clear screen', function (commandObject) {
+		cli.log('execute command clear');
+		cli.cache.buffer.innerHTML = '';
+	});
+})(window.cli);
+
+// commands\help.js
+(function (cli) {
+	cli.command('help', 'Display this list', function (commandObject) {
+		cli.log('execute command help');
+		cli.print('Command line interface for sites.');
+		cli.print('Version: ' + cli.version);
+		cli.print('');
+		cli.print('List of available commands:');
+
+		Object.keys(cli.workers.commands).sort().forEach(function (command) {
+			var descr = cli.workers.commands[command].description;
+			cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
+		});
+	});
+})(window.cli);
+
 // keys\autocomplete.js
 (function (cli) {
 	cli.registerKey(9, 'Tab', function (event, isInCommandLine) {
@@ -416,30 +440,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		if (isInCommandLine) event.preventDefault();
 
 		cli.toggle();
-	});
-})(window.cli);
-
-// commands\clear.js
-(function (cli) {
-	cli.command('clear', 'Clear screen', function (commandObject) {
-		cli.log('execute command clear');
-		cli.cache.buffer.innerHTML = '';
-	});
-})(window.cli);
-
-// commands\help.js
-(function (cli) {
-	cli.command('help', 'Display this list', function (commandObject) {
-		cli.log('execute command help');
-		cli.print('Command line interface for sites.');
-		cli.print('Version: ' + cli.version);
-		cli.print('');
-		cli.print('List of available commands:');
-
-		Object.keys(cli.workers.commands).sort().forEach(function (command) {
-			var descr = cli.workers.commands[command].description;
-			cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
-		});
 	});
 })(window.cli);
 
