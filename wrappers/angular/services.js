@@ -67,13 +67,16 @@ angular.module('cli').config(function ($provide) {
 					$delegate[0].compile = function() {
 						return function (scope, element, attrs) {
 							$delegate[0].link.apply(this, arguments);
-							console.log('COMPILE ' + name, scope, element, attrs);
+							console.log('COMPILE ' + name, this, scope, element, attrs);
 
 							if (!window.cli.directives[name]) window.cli.directives[name] = [];
-							window.cli.directives[name].push(scope);
+							scope.$cliPosition = window.cli.directives[name].push(scope) - 1;
+
+							scope.$on('$destroy', function () {
+								window.cli.directives[name].splice(scope.$cliPosition, 1);
+							});
 						};
 					};
-
 
 					return $delegate;
 				});

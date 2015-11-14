@@ -12,9 +12,10 @@
 	<div ng-app="app">
 		<div ng-controller="main">
 			<h1>{{ message }}</h1>
-			<list param="message"></list>
+			<list param="message" ng-repeat="i in times track by $index"></list>
 		</div>
-	<list param="message"></list>
+		<hr/>
+		<list param="message"></list>
 	</div>
 </body>
 </html>
