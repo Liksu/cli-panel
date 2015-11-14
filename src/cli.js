@@ -100,13 +100,13 @@ function CLI() {
 		show ? this.show() : this.hide();
 	}.bind(this);
 
-	this.mouseUp = function() {
+	this.mouseUp = function(event) {
 		var selectedText = "";
 		if (window.getSelection) selectedText = window.getSelection().toString();
 		else if (document.selection && document.selection.type != "Control") {
 			selectedText = document.selection.createRange().text;
 		}
-		if (!selectedText) this.focus();
+		if (!selectedText && event.target !== this.cache.commandInput) this.focus();
 	}.bind(this);
 
 	this.focus = function() {
