@@ -36,6 +36,8 @@ function CLI() {
 	}.bind(this);
 
 	this.init = function(options) {
+		if (this.cache.inited) return console.warn('The cli has already been initiated');
+
 		if (typeof options === 'object') {
 			Object.keys(options).forEach(key => this.settings[key] = options[key]);
 		}
@@ -68,6 +70,7 @@ function CLI() {
 		this.setPrompt();
 
 		this.toggle(this.cache.show);
+		this.cache.inited = true;
 	}.bind(this);
 
 	document.addEventListener("DOMContentLoaded", this.init);

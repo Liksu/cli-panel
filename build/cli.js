@@ -1,7 +1,7 @@
 /**
  * cli-panel - Command line interface for sites
  * @author Liksu
- * @version v0.10.1
+ * @version v0.10.4
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -52,6 +52,8 @@ window.cli = new function CLI() {
 	this.init = (function (options) {
 		var _this = this;
 
+		if (this.cache.inited) return console.warn('The cli has already been initiated');
+
 		if ((typeof options === 'undefined' ? 'undefined' : _typeof(options)) === 'object') {
 			Object.keys(options).forEach(function (key) {
 				return _this.settings[key] = options[key];
@@ -86,6 +88,7 @@ window.cli = new function CLI() {
 		this.setPrompt();
 
 		this.toggle(this.cache.show);
+		this.cache.inited = true;
 	}).bind(this);
 
 	document.addEventListener("DOMContentLoaded", this.init);
@@ -309,7 +312,7 @@ window.cli = new function CLI() {
 	this.postprocessor = store.bind(this, 'post');
 	this.registerKey = store.bind(this, 'keys');
 }();
-window.cli.version = "0.10.1";
+window.cli.version = "0.10.4";
 
 'use strict';
 
