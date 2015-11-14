@@ -729,7 +729,14 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		if (!input) return commandObject;
 
 		try {
-			var result = commandObject.result = new Function('return ' + input)();
+			['services', 'directives', 'controllers'].forEach(function (part) {
+				Object.keys(cli.ng[part]).forEach(function (key) {
+					var re = new RegExp('(^|[^\\w.])' + key.replace(/(\W)/g, '\\$1'), 'g');
+					input = input.replace(re, '$1this.' + part + '.' + key);
+				});
+			});
+
+			var result = commandObject.result = new Function('return ' + input).call(cli.ng);
 			cli.print((typeof result === 'undefined' ? 'undefined' : _typeof(result)) !== 'object' ? result : JSON.stringify(result));
 			commandObject.input = '';
 		} catch (e) {
