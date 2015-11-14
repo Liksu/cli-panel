@@ -1,7 +1,7 @@
 /**
  * cli-panel - Command line interface for sites
  * @author Liksu
- * @version v0.10.0
+ * @version v0.10.1
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -309,35 +309,11 @@ window.cli = new function CLI() {
 	this.postprocessor = store.bind(this, 'post');
 	this.registerKey = store.bind(this, 'keys');
 }();
-window.cli.version = "0.10.0";
+window.cli.version = "0.10.1";
 
 'use strict';
 
 function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
-
-// commands\clear.js
-(function (cli) {
-	cli.command('clear', 'Clear screen', function (commandObject) {
-		cli.log('execute command clear');
-		cli.cache.buffer.innerHTML = '';
-	});
-})(window.cli);
-
-// commands\help.js
-(function (cli) {
-	cli.command('help', 'Display this list', function (commandObject) {
-		cli.log('execute command help');
-		cli.print('Command line interface for sites.');
-		cli.print('Version: ' + cli.version);
-		cli.print('');
-		cli.print('List of available commands:');
-
-		Object.keys(cli.workers.commands).sort().forEach(function (command) {
-			var descr = cli.workers.commands[command].description;
-			cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
-		});
-	});
-})(window.cli);
 
 // keys\autocomplete.js
 (function (cli) {
@@ -440,6 +416,30 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		if (isInCommandLine) event.preventDefault();
 
 		cli.toggle();
+	});
+})(window.cli);
+
+// commands\clear.js
+(function (cli) {
+	cli.command('clear', 'Clear screen', function (commandObject) {
+		cli.log('execute command clear');
+		cli.cache.buffer.innerHTML = '';
+	});
+})(window.cli);
+
+// commands\help.js
+(function (cli) {
+	cli.command('help', 'Display this list', function (commandObject) {
+		cli.log('execute command help');
+		cli.print('Command line interface for sites.');
+		cli.print('Version: ' + cli.version);
+		cli.print('');
+		cli.print('List of available commands:');
+
+		Object.keys(cli.workers.commands).sort().forEach(function (command) {
+			var descr = cli.workers.commands[command].description;
+			cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
+		});
 	});
 })(window.cli);
 
@@ -728,14 +728,31 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		if (!input) return commandObject;
 
 		try {
+			// prepare input string
+			var apply = {};
 			['services', 'directives', 'controllers'].forEach(function (part) {
+				var ifDirective = '';
+				if (part === 'directives') ifDirective = '(\\[\\d+\\])?';
+
 				Object.keys(cli.ng[part]).forEach(function (key) {
-					var re = new RegExp('(^|[^\\w.])' + key.replace(/(\W)/g, '\\$1'), 'g');
-					input = input.replace(re, '$1this.' + part + '.' + key);
+					var re = new RegExp('(^|[^\\w.])' + key.replace(/(\W)/g, '\\$1') + ifDirective, 'g');
+					var to = 'this.' + part + '.' + key;
+
+					input = input.replace(re, function (match, prefix, number) {
+						if (typeof number !== 'string') number = '';
+						if (part !== 'services') apply[to + number] = true;
+						return prefix + to + number;
+					});
 				});
 			});
 
+			// run command
 			var result = commandObject.result = new Function('return ' + input).call(cli.ng);
+			// $apply
+			new Function(Object.keys(apply).map(function (key) {
+				return 'if (' + key + '.$apply) {' + key + '.$apply()}';
+			}).join(';')).call(cli.ng);
+
 			cli.print((typeof result === 'undefined' ? 'undefined' : _typeof(result)) !== 'object' ? result : JSON.stringify(result));
 			commandObject.input = '';
 		} catch (e) {
