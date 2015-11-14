@@ -90,7 +90,7 @@ gulp.task('clean', function () {
 		.pipe(clean());
 });
 
-gulp.task('ngct', function() {
+gulp.task('ngct', ['clean'], function() {
 	var ngctBanner = banner.split('\n');
 	ngctBanner[1] = ' * ngct';
 	ngctBanner.push('window.ng = {};', '');
