@@ -72,7 +72,7 @@ var srcTemplates = function() {
 		}))
 };
 
-var minify = function (stream) {
+var minify = function (stream, alternativeBanner) {
 	return stream
 		.pipe(uglify({
 			compress: {
@@ -80,7 +80,7 @@ var minify = function (stream) {
 				drop_debugger: true
 			}
 		}))
-		.pipe(header(banner, pkg))
+		.pipe(header(alternativeBanner || banner, pkg))
 		.pipe(rename({suffix: '.min'}))
 		.pipe(gulp.dest('build'));
 };
@@ -90,7 +90,27 @@ gulp.task('clean', function () {
 		.pipe(clean());
 });
 
-gulp.task('default', ['clean'], function () {
+gulp.task('ngct', function() {
+	var ngctBanner = banner.split('\n');
+	ngctBanner[1] = ' * ngct';
+	ngctBanner.push('window.ng = {};', '');
+	ngctBanner = ngctBanner.join('\n');
+
+	var ngct = gulp.src(['wrappers/angular/cli.js', 'wrappers/angular/services.js'])
+		.pipe(plumber())
+		.pipe(size({showFiles: true}))
+		.pipe(ngAnnotate())
+		.pipe(indent({tabs: true, amount: 1}))
+		.pipe(wrap('\n// <%= file.path.replace(file.base, "wrappers/angular/") %>\n(cli => {\n<%= contents %>\n})(window);'))
+		.pipe(babel(babel_conf))
+		.pipe(concat('ngct.js', {newLine: '\n\n'}))
+		.pipe(header(ngctBanner, pkg))
+		.pipe(gulp.dest('build'));
+
+	return minify(ngct, ngctBanner);
+});
+
+gulp.task('default', ['clean', 'ngct'], function () {
 	var sources = streamqueue({objectMode: true}
 			, srcCode()
 			, srcTemplates()

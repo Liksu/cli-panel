@@ -7,7 +7,6 @@
 })(angular.module);
 
 angular.module('cli', []).factory('$cli', () => {
-	var cli = window.cli;
 	cli.ng = {controllers: {}, directives: {}, services: {}};
 	cli.ng.c = cli.ng.controllers;
 	cli.ng.d = cli.ng.directives;

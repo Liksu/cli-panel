@@ -1,7 +1,7 @@
 /**
  * cli-panel - Command line interface for sites
  * @author Liksu
- * @version v0.10.0-alpha.10
+ * @version v0.10.0
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -309,7 +309,7 @@ window.cli = new function CLI() {
 	this.postprocessor = store.bind(this, 'post');
 	this.registerKey = store.bind(this, 'keys');
 }();
-window.cli.version = "0.10.0-alpha.10";
+window.cli.version = "0.10.0";
 
 'use strict';
 
@@ -705,7 +705,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 	})(angular.module);
 
 	angular.module('cli', []).factory('$cli', function () {
-		var cli = window.cli;
 		cli.ng = { controllers: {}, directives: {}, services: {} };
 		cli.ng.c = cli.ng.controllers;
 		cli.ng.d = cli.ng.directives;

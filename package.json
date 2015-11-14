@@ -1,6 +1,6 @@
 {
   "name": "cli-panel",
-  "version": "0.10.0-alpha.10",
+  "version": "0.10.0",
   "description": "Command line interface for sites",
   "main": "build/cli.min.js",
   "dependencies": {
