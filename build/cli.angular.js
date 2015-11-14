@@ -339,6 +339,110 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 	});
 })(window.cli);
 
+// keys\autocomplete.js
+(function (cli) {
+	cli.registerKey(9, 'Tab', function (event, isInCommandLine) {
+		cli.log('process key Tab for autocomplete');
+
+		if (!isInCommandLine) return;
+		event.preventDefault();
+
+		var line = cli.cache.commandInput.value;
+		line = new RegExp('^' + line);
+
+		var commands = Object.keys(cli.workers.commands).sort(function (a, b) {
+			return a.length - b.length;
+		}).filter(function (cmd) {
+			return line.test(cmd);
+		});
+
+		if (!commands.length) return;else if (commands.length === 1) cli.cache.commandInput.value = commands[0] + ' ';else cli.print(commands.join('\t'));
+	});
+})(window.cli);
+
+// keys\echo.js
+(function (cli) {
+	cli.registerKey(0, 'Echo', function (event, isInCommandLine) {
+		cli.log('echo pressed key', event.keyCode, event);
+	});
+})(window.cli);
+
+// keys\history.js
+(function (cli) {
+	var lastCommand = '';
+	var historyScroll = 0;
+
+	function setCommand(command) {
+		cli.cache.commandInput.value = command;
+		cli.focus();
+	}
+
+	cli.registerKey(38, 'Up', function (event, isInCommandLine) {
+		cli.log('process key Up for history');
+
+		if (!isInCommandLine) return;
+		if (historyScroll == cli.history.length) return;
+
+		if (!historyScroll) lastCommand = cli.cache.commandInput.value;
+
+		historyScroll++;
+		if (historyScroll > cli.history.length) historyScroll = cli.history.length;
+
+		setCommand(cli.history[cli.history.length - historyScroll]);
+	});
+
+	cli.registerKey(40, 'Down', function (event, isInCommandLine) {
+		cli.log('process key Down for history');
+
+		if (!isInCommandLine) return;
+		if (!historyScroll) return;
+
+		historyScroll--;
+		var command = '';
+
+		if (historyScroll <= 0) {
+			historyScroll = 0;
+			command = lastCommand;
+		} else command = cli.history[cli.history.length - historyScroll];
+
+		setCommand(command);
+	});
+
+	cli.registerKey(13, 'Enter', function (event, isInCommandLine) {
+		cli.log('process key Enter for history');
+
+		lastCommand = '';
+		historyScroll = 0;
+	});
+})(window.cli);
+
+// keys\run.js
+(function (cli) {
+	cli.registerKey(13, 'Enter', function (event, isInCommandLine) {
+		cli.log('process key Enter for run');
+
+		if (!isInCommandLine) return;
+
+		cli.print(cli.cache.prompt.outerHTML + cli.cache.commandInput.value);
+		cli.run(cli.cache.commandInput.value);
+
+		cli.cache.buffer.scrollTop = cli.cache.buffer.scrollHeight;
+		cli.cache.commandInput.value = '';
+	});
+})(window.cli);
+
+// keys\show.js
+(function (cli) {
+	cli.registerKey(192, '`', function (event, isInCommandLine) {
+		cli.log('process key ` for show');
+
+		if (event.target.nodeName === 'INPUT' && !isInCommandLine) return;
+		if (isInCommandLine) event.preventDefault();
+
+		cli.toggle();
+	});
+})(window.cli);
+
 // postprocessors\calc.js
 (function (cli) {
 	var priority = '** log * / - +'.split(' ');
@@ -450,110 +554,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 
 		return commandObject;
 	}, 1000);
-})(window.cli);
-
-// keys\autocomplete.js
-(function (cli) {
-	cli.registerKey(9, 'Tab', function (event, isInCommandLine) {
-		cli.log('process key Tab for autocomplete');
-
-		if (!isInCommandLine) return;
-		event.preventDefault();
-
-		var line = cli.cache.commandInput.value;
-		line = new RegExp('^' + line);
-
-		var commands = Object.keys(cli.workers.commands).sort(function (a, b) {
-			return a.length - b.length;
-		}).filter(function (cmd) {
-			return line.test(cmd);
-		});
-
-		if (!commands.length) return;else if (commands.length === 1) cli.cache.commandInput.value = commands[0] + ' ';else cli.print(commands.join('\t'));
-	});
-})(window.cli);
-
-// keys\echo.js
-(function (cli) {
-	cli.registerKey(0, 'Echo', function (event, isInCommandLine) {
-		cli.log('echo pressed key', event.keyCode, event);
-	});
-})(window.cli);
-
-// keys\history.js
-(function (cli) {
-	var lastCommand = '';
-	var historyScroll = 0;
-
-	function setCommand(command) {
-		cli.cache.commandInput.value = command;
-		cli.focus();
-	}
-
-	cli.registerKey(38, 'Up', function (event, isInCommandLine) {
-		cli.log('process key Up for history');
-
-		if (!isInCommandLine) return;
-		if (historyScroll == cli.history.length) return;
-
-		if (!historyScroll) lastCommand = cli.cache.commandInput.value;
-
-		historyScroll++;
-		if (historyScroll > cli.history.length) historyScroll = cli.history.length;
-
-		setCommand(cli.history[cli.history.length - historyScroll]);
-	});
-
-	cli.registerKey(40, 'Down', function (event, isInCommandLine) {
-		cli.log('process key Down for history');
-
-		if (!isInCommandLine) return;
-		if (!historyScroll) return;
-
-		historyScroll--;
-		var command = '';
-
-		if (historyScroll <= 0) {
-			historyScroll = 0;
-			command = lastCommand;
-		} else command = cli.history[cli.history.length - historyScroll];
-
-		setCommand(command);
-	});
-
-	cli.registerKey(13, 'Enter', function (event, isInCommandLine) {
-		cli.log('process key Enter for history');
-
-		lastCommand = '';
-		historyScroll = 0;
-	});
-})(window.cli);
-
-// keys\run.js
-(function (cli) {
-	cli.registerKey(13, 'Enter', function (event, isInCommandLine) {
-		cli.log('process key Enter for run');
-
-		if (!isInCommandLine) return;
-
-		cli.print(cli.cache.prompt.outerHTML + cli.cache.commandInput.value);
-		cli.run(cli.cache.commandInput.value);
-
-		cli.cache.buffer.scrollTop = cli.cache.buffer.scrollHeight;
-		cli.cache.commandInput.value = '';
-	});
-})(window.cli);
-
-// keys\show.js
-(function (cli) {
-	cli.registerKey(192, '`', function (event, isInCommandLine) {
-		cli.log('process key ` for show');
-
-		if (event.target.nodeName === 'INPUT' && !isInCommandLine) return;
-		if (isInCommandLine) event.preventDefault();
-
-		cli.toggle();
-	});
 })(window.cli);
 
 // preprocessors\argv.js
@@ -705,105 +705,95 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 	})(angular.module);
 
 	angular.module('cli', []).factory('$cli', function () {
-		console.log('CLI factory');
 		var cli = window.cli;
-		cli.controllers = {};
-		cli.directives = {};
-		cli.services = {};
+		cli.ng = { controllers: {}, directives: {}, services: {} };
+		cli.ng.c = cli.ng.controllers;
+		cli.ng.d = cli.ng.directives;
+		cli.ng.s = cli.ng.services;
 		return cli;
 	});
+})(window.cli);
+
+'use strict';
+
+function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
+
+// wrappers/angular/eval.js
+(function (cli) {
+	try {
+		cli.workers.post[1000].shift();
+	} catch (e) {} // remove original eval
+
+	cli.postprocessor('eval', 'Run js code with angular objects', function (commandObject) {
+		var input = commandObject.input;
+		if (!input) return commandObject;
+
+		try {
+			var result = commandObject.result = new Function('return ' + input)();
+			cli.print((typeof result === 'undefined' ? 'undefined' : _typeof(result)) !== 'object' ? result : JSON.stringify(result));
+			commandObject.input = '';
+		} catch (e) {
+			cli.print(e.name + ': ' + e.message);
+		}
+
+		return commandObject;
+	}, 1000);
 })(window.cli);
 
 "use strict";
 
 // wrappers/angular/services.js
 (function (cli) {
-	angular.module('cli').run(["$cli", "$rootScope", "$injector", function ($cli, $rootScope, $injector) {
-		console.log('list or registred modules', angular.modules);
-
-		var store = { controller: {}, directive: {}, service: {} };
-		window.store = store;
+	angular.module('cli').run(["$injector", "$cli", function ($injector, $cli) {
 		var modules = angular.modules.reduce(function (list, module) {
 			return list.concat(angular.module(module)._invokeQueue);
 		}, []);
 
+		// get services
 		var services = modules.filter(function (item) {
 			return item[1] === 'service';
 		}).map(function (item) {
-			return store.service[item[2][0]] = item[2][1], item[2][0];
+			return item[2][0];
 		});
-		//.map(function(item) { return item[2][0] });
-
-		var controllers = modules.filter(function (item) {
-			return item[1] === 'controller' || item[0] === '$controllerProvider';
-		}).map(function (item) {
-			return store.controller[item[2][0]] = item[2][1], item[2][0];
-		});
-		//.map(function(item) { return item[2][0] });
-
-		var directives = modules.filter(function (item) {
-			return item[1] === 'directive';
-		}).map(function (item) {
-			return store.directive[item[2][0]] = item[2][1], item[2][0];
-		});
-		//.map(function(item) { return item[2][0] });
 
 		services.push('$http', '$q');
 		services.forEach(function (name) {
-			return window.cli.services[name] = $injector.get(name);
+			return cli.ng.services[name] = $injector.get(name);
 		});
 
-		//console.log(angular.modules);
-		//angular.module('cli').factory('cliServiceStorage', Function.apply(angular.module('cli'), services.concat('console.warn("arguments", arguments); return {}')));
-
-		//directives.forEach((name) => {
-		//	$provide.decorator(name + 'Directive', ($delegate, $parse) => {
-		//		console.log($delegate, $parse);
-		//		return $delegate;
-		//	})
-		//});
-
-		console.log('services:', services, 'controllers:', controllers, 'directives:', directives);
-		console.log('store:', store);
-		console.log('modules:', modules);
-		console.log('$rootScope:', $rootScope);
+		// set keywords
+		var keywords = modules.filter(function (item) {
+			return item[0] === '$controllerProvider' || item[1] === 'controller' || item[1] === 'directive';
+		}).map(function (item) {
+			return item[2][0];
+		}).concat(services);
 	}]);
 
 	angular.module('cli').config(["$provide", function ($provide) {
 		angular.modules = angular.modules.filter(function (module) {
 			return module !== 'cli';
 		});
-		console.log('CLI config', angular.modules);
 
-		//var directives = modules
-		//	.filter(function(item) { return item[1] === 'directive' })
-		//	.map(function(item) { return item[2][0] });
-
+		// get directives
 		angular.modules.forEach(function (module) {
-			console.log('get directives for', module);
 			var directives = angular.module(module)._invokeQueue.filter(function (item) {
 				return item[1] === 'directive';
 			}).map(function (item) {
 				return item[2][0];
 			});
 
-			console.log(module, 'directives', directives);
-
 			directives.forEach(function (name) {
 				angular.module(module).config(function ($provide) {
 					$provide.decorator(name + 'Directive', function ($delegate) {
-						console.log('DIRECTIVE', name, $delegate.scope, $delegate);
-
 						$delegate[0].compile = function () {
 							return function (scope, element, attrs) {
 								$delegate[0].link.apply(this, arguments);
-								console.log('COMPILE ' + name, this, scope, element, attrs);
 
-								if (!window.cli.directives[name]) window.cli.directives[name] = [];
-								scope.$cliPosition = window.cli.directives[name].push(scope) - 1;
+								if (!cli.ng.directives[name]) cli.ng.directives[name] = [];
+								scope.$cliPosition = cli.ng.directives[name].push(scope) - 1;
 
 								scope.$on('$destroy', function () {
-									window.cli.directives[name].splice(scope.$cliPosition, 1);
+									return cli.ng.directives[name].splice(scope.$cliPosition, 1);
 								});
 							};
 						};
@@ -814,24 +804,10 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 			});
 		});
 
-		//directives.forEach((name) => {
-		//	$provide.decorator(name + 'Directive', ($delegate, $parse) => {
-		//		console.log($delegate, $parse);
-		//		return $delegate;
-		//	})
-		//});
-
-		//var _directive = angular.module(angular.modules[0]).directive;
-		//angular.module(angular.modules[0]).directive = function( name, factory ) {
-		//	console.log('set directive', name, factory);
-		//	$compileProvider.directive( name, factory );
-		//	return( this );
-		//};
-
+		// get controllers
 		$provide.decorator('$controller', ["$delegate", function ($delegate) {
 			return function (constructor, locals, later, indent) {
-				console.warn('hey', constructor, locals);
-				if (typeof constructor == "string") window.cli.controllers[constructor] = locals.$scope;else if (typeof constructor == "function") console.info('doh', constructor.prototype);
+				if (typeof constructor == "string") cli.ng.controllers[constructor] = locals.$scope;
 				return $delegate(constructor, locals, later, indent);
 			};
 		}]);

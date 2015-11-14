@@ -40,7 +40,6 @@ angular
 			},
 			link: function ($scope) {
 				books.getList().then(books => $scope.books = books);
-				console.log('INFO, directive loaded with scope:', $scope);
 			},
 			controller: function($scope) {
 				$scope.refresh = function () {
