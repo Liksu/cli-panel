@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		cli.setPrompt([
 			'<span class="bracket">[</span>',
 			'<span class="time">',
-			new Date().toLocaleTimeString('arab', {hour12: false}),
+			new Date().toLocaleTimeString('en-GB'), // British English uses two-digit 24-hour time format
 			'</span>',
 			'<span class="bracket">]</span>&nbsp;',
 			cli.settings.prompt

@@ -1,2 +1,4 @@
 git show vanilla:build/cli.min.js > cli.min.js
+git show vanilla:build/cli.angular.min.js > cli.angular.min.js
+git show vanilla:build/ngct.min.js > ngct.min.js
 git show vanilla:samples/app.js > app.js
