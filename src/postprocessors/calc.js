@@ -61,14 +61,27 @@ cli.postprocessor('calc', 'Simple calculator', commandObject => {
 	var input = commandObject.input;
 
 	if (!input) return commandObject;
-	if (!/^[log\s\d.e()/*+-]+$/.test(input)) return commandObject;
+	if (!/([/*+-]|log)/.test(input)) return commandObject;
+
+	var ops = priority.map(op => [''].concat(op.split('')).join('\\')).concat(['\\s']).join('|');
+	input = input
+		.split(new RegExp(`(${ops})`))
+		.map(el => priority.indexOf(el) === -1 && isNaN(+el) && typeof window[el] !== 'undefined' ? window[el] : el)
+		.join('');
 
 	try {
 		commandObject.result = calc(input);
 		cli.print(commandObject.result);
 		commandObject.input = '';
 	} catch(e) {
-		cli.print(e.name + ': ' + e.message);
+		var name = e.name
+			.split(/([A-Z])/g)
+			.filter(s => s)
+			.map((s, i) => s.toLowerCase() + (i % 2 ? ' ' : ''))
+			.join('')
+			.trim();
+
+		cli.print(`Calculator ${name}: ${e.message}`);
 	}
 
 	return commandObject;

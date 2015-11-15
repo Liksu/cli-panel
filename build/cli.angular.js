@@ -1,7 +1,7 @@
 /**
  * cli-panel - Command line interface for sites
  * @author Liksu
- * @version v0.11.0
+ * @version v0.12.0
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -325,11 +325,35 @@ window.cli = new function CLI() {
 	this.postprocessor = store.bind(this, 'post');
 	this.registerKey = store.bind(this, 'keys');
 }();
-window.cli.version = "0.11.0";
+window.cli.version = "0.12.0";
 
 'use strict';
 
 function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
+
+// commands\clear.js
+(function (cli) {
+	cli.command('clear', 'Clear screen', function (commandObject) {
+		cli.log('execute command clear');
+		cli.cache.buffer.innerHTML = '';
+	});
+})(window.cli);
+
+// commands\help.js
+(function (cli) {
+	cli.command('help', 'Display this list', function (commandObject) {
+		cli.log('execute command help');
+		cli.print('Command line interface for sites.');
+		cli.print('Version: ' + cli.version);
+		cli.print('');
+		cli.print('List of available commands:');
+
+		Object.keys(cli.workers.commands).sort().forEach(function (command) {
+			var descr = cli.workers.commands[command].description;
+			cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
+		});
+	});
+})(window.cli);
 
 // keys\autocomplete.js
 (function (cli) {
@@ -435,30 +459,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 	});
 })(window.cli);
 
-// commands\clear.js
-(function (cli) {
-	cli.command('clear', 'Clear screen', function (commandObject) {
-		cli.log('execute command clear');
-		cli.cache.buffer.innerHTML = '';
-	});
-})(window.cli);
-
-// commands\help.js
-(function (cli) {
-	cli.command('help', 'Display this list', function (commandObject) {
-		cli.log('execute command help');
-		cli.print('Command line interface for sites.');
-		cli.print('Version: ' + cli.version);
-		cli.print('');
-		cli.print('List of available commands:');
-
-		Object.keys(cli.workers.commands).sort().forEach(function (command) {
-			var descr = cli.workers.commands[command].description;
-			cli.print(['\t', command, descr ? '- ' + descr : ''].join(' '));
-		});
-	});
-})(window.cli);
-
 // postprocessors\calc.js
 (function (cli) {
 	var priority = '** log * / - +'.split(' ');
@@ -540,14 +540,27 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 		var input = commandObject.input;
 
 		if (!input) return commandObject;
-		if (!/^[log\s\d.e()/*+-]+$/.test(input)) return commandObject;
+		if (!/([/*+-]|log)/.test(input)) return commandObject;
+
+		var ops = priority.map(function (op) {
+			return [''].concat(op.split('')).join('\\');
+		}).concat(['\\s']).join('|');
+		input = input.split(new RegExp('(' + ops + ')')).map(function (el) {
+			return priority.indexOf(el) === -1 && isNaN(+el) && typeof window[el] !== 'undefined' ? window[el] : el;
+		}).join('');
 
 		try {
 			commandObject.result = calc(input);
 			cli.print(commandObject.result);
 			commandObject.input = '';
 		} catch (e) {
-			cli.print(e.name + ': ' + e.message);
+			var name = e.name.split(/([A-Z])/g).filter(function (s) {
+				return s;
+			}).map(function (s, i) {
+				return s.toLowerCase() + (i % 2 ? ' ' : '');
+			}).join('').trim();
+
+			cli.print('Calculator ' + name + ': ' + e.message);
 		}
 
 		return commandObject;

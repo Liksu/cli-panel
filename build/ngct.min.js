@@ -1,7 +1,7 @@
 /**
  * ngct
  * @author Liksu
- * @version v0.11.0
+ * @version v0.12.0
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
