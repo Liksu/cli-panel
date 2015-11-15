@@ -39,11 +39,11 @@ angular
 				param: '=?'
 			},
 			link: function ($scope) {
-				books.getList().then(books => $scope.books = books);
+				books.getList().then(function(books) {$scope.books = books});
 			},
 			controller: function($scope) {
 				$scope.refresh = function () {
-					books.getList().then(books => $scope.books = books);
+					books.getList().then(function(books) {$scope.books = books});
 				}
 			}
 		}
