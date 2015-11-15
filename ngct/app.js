@@ -24,12 +24,6 @@ angular
 		$scope.remove = function() {
 			$scope.times.length--
 		};
-
-		$cli.command('books_load', 'Angular sample async command', function() {
-			return books.getList().then(function(list) {
-				$cli.print(list.map(function(book) { return book.title + ': ' + book.price + '$' }).join(', '))
-			})
-		});
 	})
 
 	.directive('list', function (books) {

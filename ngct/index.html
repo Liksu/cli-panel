@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Cli test</title>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.0/angular.js"></script>
+	<script src="../ngct.min.js"></script>
+	<script src="app.js"></script>
+</head>
+<body>
+	<div ng-app="app">
+		<div ng-controller="main">
+			<h1>{{ message }}</h1>
+			<list param="message" ng-repeat="i in times track by $index"></list>
+		</div>
+		<hr/>
+		<list param="message"></list>
+	</div>
+</body>
+</html>
