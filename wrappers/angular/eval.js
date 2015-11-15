@@ -28,7 +28,7 @@ cli.postprocessor('eval', 'Run js code with angular objects', commandObject => {
 		// $apply
 		new Function(Object.keys(apply).map(key => `if (${key}.$apply) {${key}.$apply()}`).join(';')).call(cli.ng);
 
-		cli.print(typeof result !== 'object' ? result : JSON.stringify(result));
+		cli.print(typeof result !== 'object' ? result : cli.stringify(result));
 		commandObject.input = '';
 	} catch(e) {
 		cli.print(e.name + ': ' + e.message);

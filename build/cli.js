@@ -1,7 +1,7 @@
 /**
  * cli-panel - Command line interface for sites
  * @author Liksu
- * @version v1.0.0-beta.1
+ * @version v1.0.0-beta.2
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -202,6 +202,18 @@ window.cli = new function CLI() {
 		if (_this2.settings.debug) console.log.apply(console, arg);
 	};
 
+	this.stringify = function (value) {
+		var seen = [];
+		return JSON.stringify(value, function (key, val) {
+			if (val != null && (typeof val === 'undefined' ? 'undefined' : _typeof(val)) == "object") {
+				var pos;
+				if ((pos = seen.indexOf(val)) >= 0) return '$ref:' + pos;
+				seen.push(val);
+			}
+			return val;
+		});
+	};
+
 	/* API */
 
 	this.setPrompt = (function (prompt, save) {
@@ -325,7 +337,7 @@ window.cli = new function CLI() {
 	this.postprocessor = store.bind(this, 'post');
 	this.registerKey = store.bind(this, 'keys');
 }();
-window.cli.version = "1.0.0-beta.1";
+window.cli.version = "1.0.0-beta.2";
 
 'use strict';
 
@@ -575,7 +587,7 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 
 		try {
 			var result = commandObject.result = new Function('return ' + input)();
-			cli.print((typeof result === 'undefined' ? 'undefined' : _typeof(result)) !== 'object' ? result : JSON.stringify(result));
+			cli.print((typeof result === 'undefined' ? 'undefined' : _typeof(result)) !== 'object' ? result : cli.stringify(result));
 			commandObject.input = '';
 		} catch (e) {
 			cli.print(e.name + ': ' + e.message);

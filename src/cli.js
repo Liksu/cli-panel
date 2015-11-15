@@ -177,6 +177,18 @@ function CLI() {
 		if (this.settings.debug) console.log.apply(console, arg);
 	};
 
+	this.stringify = function(value) {
+		var seen = [];
+		return JSON.stringify(value, function(key, val) {
+			if (val != null && typeof val == "object") {
+				var pos;
+				if ((pos = seen.indexOf(val)) >= 0) return '$ref:' + pos;
+				seen.push(val);
+			}
+			return val;
+		});
+	};
+
 	/* API */
 
 	this.setPrompt = function(prompt, save) {
