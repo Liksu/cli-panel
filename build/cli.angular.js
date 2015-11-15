@@ -1,7 +1,7 @@
 /**
  * cli-panel - Command line interface for sites
  * @author Liksu
- * @version v1.0.0-beta.2
+ * @version v1.0.0-beta.3
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -337,7 +337,7 @@ window.cli = new function CLI() {
 	this.postprocessor = store.bind(this, 'post');
 	this.registerKey = store.bind(this, 'keys');
 }();
-window.cli.version = "1.0.0-beta.2";
+window.cli.version = "1.0.0-beta.3";
 
 'use strict';
 
