@@ -28,7 +28,7 @@ window.ng = {};
 	});
 })(window);
 
-"use strict";
+'use strict';
 
 // wrappers/angular/services.js
 (function (cli) {
@@ -71,8 +71,8 @@ window.ng = {};
 			});
 
 			directives.forEach(function (name) {
-				angular.module(module).config(function ($provide) {
-					$provide.decorator(name + 'Directive', function ($delegate) {
+				angular.module(module).config(["$provide", function ($provide) {
+					$provide.decorator(name + 'Directive', ["$delegate", function ($delegate) {
 						$delegate[0].compile = function () {
 							return function (scope, element, attrs) {
 								$delegate[0].link.apply(this, arguments);
@@ -87,8 +87,8 @@ window.ng = {};
 						};
 
 						return $delegate;
-					});
-				});
+					}]);
+				}]);
 			});
 		});
 

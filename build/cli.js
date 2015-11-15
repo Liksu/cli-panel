@@ -355,110 +355,6 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 	});
 })(window.cli);
 
-// keys\autocomplete.js
-(function (cli) {
-	cli.registerKey(9, 'Tab', function (event, isInCommandLine) {
-		cli.log('process key Tab for autocomplete');
-
-		if (!isInCommandLine) return;
-		event.preventDefault();
-
-		var line = cli.cache.commandInput.value;
-		line = new RegExp('^' + line);
-
-		var commands = Object.keys(cli.workers.commands).sort(function (a, b) {
-			return a.length - b.length;
-		}).filter(function (cmd) {
-			return line.test(cmd);
-		});
-
-		if (!commands.length) return;else if (commands.length === 1) cli.cache.commandInput.value = commands[0] + ' ';else cli.print(commands.join('\t'));
-	});
-})(window.cli);
-
-// keys\echo.js
-(function (cli) {
-	cli.registerKey(0, 'Echo', function (event, isInCommandLine) {
-		cli.log('echo pressed key', event.keyCode, event);
-	});
-})(window.cli);
-
-// keys\history.js
-(function (cli) {
-	var lastCommand = '';
-	var historyScroll = 0;
-
-	function setCommand(command) {
-		cli.cache.commandInput.value = command;
-		cli.focus();
-	}
-
-	cli.registerKey(38, 'Up', function (event, isInCommandLine) {
-		cli.log('process key Up for history');
-
-		if (!isInCommandLine) return;
-		if (historyScroll == cli.history.length) return;
-
-		if (!historyScroll) lastCommand = cli.cache.commandInput.value;
-
-		historyScroll++;
-		if (historyScroll > cli.history.length) historyScroll = cli.history.length;
-
-		setCommand(cli.history[cli.history.length - historyScroll]);
-	});
-
-	cli.registerKey(40, 'Down', function (event, isInCommandLine) {
-		cli.log('process key Down for history');
-
-		if (!isInCommandLine) return;
-		if (!historyScroll) return;
-
-		historyScroll--;
-		var command = '';
-
-		if (historyScroll <= 0) {
-			historyScroll = 0;
-			command = lastCommand;
-		} else command = cli.history[cli.history.length - historyScroll];
-
-		setCommand(command);
-	});
-
-	cli.registerKey(13, 'Enter', function (event, isInCommandLine) {
-		cli.log('process key Enter for history');
-
-		lastCommand = '';
-		historyScroll = 0;
-	});
-})(window.cli);
-
-// keys\run.js
-(function (cli) {
-	cli.registerKey(13, 'Enter', function (event, isInCommandLine) {
-		cli.log('process key Enter for run');
-
-		if (!isInCommandLine) return;
-
-		cli.print(cli.cache.prompt.outerHTML + cli.cache.commandInput.value);
-		cli.run(cli.cache.commandInput.value);
-
-		cli.cache.buffer.scrollTop = cli.cache.buffer.scrollHeight;
-		cli.cache.commandInput.value = '';
-	});
-})(window.cli);
-
-// keys\show.js
-(function (cli) {
-	cli.registerKey(192, '`', function (event, isInCommandLine) {
-		cli.log('process key ` for show');
-
-		if (event.target.nodeName === 'INPUT' && !isInCommandLine) return;
-		if (isInCommandLine) event.preventDefault();
-
-		cli.toggle();
-	});
-})(window.cli);
-
 // postprocessors\calc.js
 (function (cli) {
 	var priority = '** log * / - +'.split(' ');
@@ -583,6 +479,110 @@ function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.const
 
 		return commandObject;
 	}, 1000);
+})(window.cli);
+
+// keys\autocomplete.js
+(function (cli) {
+	cli.registerKey(9, 'Tab', function (event, isInCommandLine) {
+		cli.log('process key Tab for autocomplete');
+
+		if (!isInCommandLine) return;
+		event.preventDefault();
+
+		var line = cli.cache.commandInput.value;
+		line = new RegExp('^' + line);
+
+		var commands = Object.keys(cli.workers.commands).sort(function (a, b) {
+			return a.length - b.length;
+		}).filter(function (cmd) {
+			return line.test(cmd);
+		});
+
+		if (!commands.length) return;else if (commands.length === 1) cli.cache.commandInput.value = commands[0] + ' ';else cli.print(commands.join('\t'));
+	});
+})(window.cli);
+
+// keys\echo.js
+(function (cli) {
+	cli.registerKey(0, 'Echo', function (event, isInCommandLine) {
+		cli.log('echo pressed key', event.keyCode, event);
+	});
+})(window.cli);
+
+// keys\history.js
+(function (cli) {
+	var lastCommand = '';
+	var historyScroll = 0;
+
+	function setCommand(command) {
+		cli.cache.commandInput.value = command;
+		cli.focus();
+	}
+
+	cli.registerKey(38, 'Up', function (event, isInCommandLine) {
+		cli.log('process key Up for history');
+
+		if (!isInCommandLine) return;
+		if (historyScroll == cli.history.length) return;
+
+		if (!historyScroll) lastCommand = cli.cache.commandInput.value;
+
+		historyScroll++;
+		if (historyScroll > cli.history.length) historyScroll = cli.history.length;
+
+		setCommand(cli.history[cli.history.length - historyScroll]);
+	});
+
+	cli.registerKey(40, 'Down', function (event, isInCommandLine) {
+		cli.log('process key Down for history');
+
+		if (!isInCommandLine) return;
+		if (!historyScroll) return;
+
+		historyScroll--;
+		var command = '';
+
+		if (historyScroll <= 0) {
+			historyScroll = 0;
+			command = lastCommand;
+		} else command = cli.history[cli.history.length - historyScroll];
+
+		setCommand(command);
+	});
+
+	cli.registerKey(13, 'Enter', function (event, isInCommandLine) {
+		cli.log('process key Enter for history');
+
+		lastCommand = '';
+		historyScroll = 0;
+	});
+})(window.cli);
+
+// keys\run.js
+(function (cli) {
+	cli.registerKey(13, 'Enter', function (event, isInCommandLine) {
+		cli.log('process key Enter for run');
+
+		if (!isInCommandLine) return;
+
+		cli.print(cli.cache.prompt.outerHTML + cli.cache.commandInput.value);
+		cli.run(cli.cache.commandInput.value);
+
+		cli.cache.buffer.scrollTop = cli.cache.buffer.scrollHeight;
+		cli.cache.commandInput.value = '';
+	});
+})(window.cli);
+
+// keys\show.js
+(function (cli) {
+	cli.registerKey(192, '`', function (event, isInCommandLine) {
+		cli.log('process key ` for show');
+
+		if (event.target.nodeName === 'INPUT' && !isInCommandLine) return;
+		if (isInCommandLine) event.preventDefault();
+
+		cli.toggle();
+	});
 })(window.cli);
 
 // preprocessors\argv.js

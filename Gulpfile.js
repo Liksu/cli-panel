@@ -99,10 +99,10 @@ gulp.task('ngct', ['clean'], function() {
 	var ngct = gulp.src(['wrappers/angular/cli.js', 'wrappers/angular/services.js'])
 		.pipe(plumber())
 		.pipe(size({showFiles: true}))
-		.pipe(ngAnnotate())
 		.pipe(indent({tabs: true, amount: 1}))
 		.pipe(wrap('\n// <%= file.path.replace(file.base, "wrappers/angular/") %>\n(cli => {\n<%= contents %>\n})(window);'))
 		.pipe(babel(babel_conf))
+		.pipe(ngAnnotate())
 		.pipe(concat('ngct.js', {newLine: '\n\n'}))
 		.pipe(header(ngctBanner, pkg))
 		.pipe(gulp.dest('build'));
@@ -124,10 +124,10 @@ gulp.task('default', ['clean', 'ngct'], function () {
 	var angular = gulp.src(['wrappers/angular/cli.js', 'wrappers/angular/*.js'])
 		.pipe(plumber())
 		.pipe(size({showFiles: true}))
-		.pipe(ngAnnotate())
 		.pipe(indent({tabs: true, amount: 1}))
 		.pipe(wrap('\n// <%= file.path.replace(file.base, "wrappers/angular/") %>\n(cli => {\n<%= contents %>\n})(window.cli);'))
-		.pipe(babel(babel_conf));
+		.pipe(babel(babel_conf))
+		.pipe(ngAnnotate());
 
 	angular = streamqueue({objectMode: true}, sources, angular)
 		.pipe(concat('cli.angular.js', {newLine: '\n\n'}))
