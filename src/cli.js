@@ -69,6 +69,8 @@ function CLI() {
 		this.cache.prompt = this.cache.panel.querySelector('.cli-prompt');
 		this.setPrompt();
 
+		window.onresize = () => this.toggleScroll();
+
 		this.toggle(this.cache.show);
 		this.cache.inited = true;
 	}.bind(this);
@@ -101,6 +103,13 @@ function CLI() {
 	this.toggle = function(show){
 		if (show === undefined) show = !this.cache.show;
 		show ? this.show() : this.hide();
+	}.bind(this);
+
+	this.toggleScroll = function(){
+		var height = this.cache.panel.offsetHeight - this.cache.line.offsetHeight;
+		this.cache.buffer.style.height = this.cache.buffer.offsetHeight > height ? height + 'px' : 'auto';
+
+		this.cache.buffer.scrollTop = this.cache.buffer.scrollHeight;
 	}.bind(this);
 
 	this.mouseUp = function(event) {
@@ -178,6 +187,7 @@ function CLI() {
 	}.bind(this);
 
 	this.print = function(string) {
+		this.toggleScroll();
 		this.cache.buffer.innerHTML += ('' + string).replace(/\t/g, this.settings.tab) + '\n';
 	}.bind(this);
 
@@ -224,7 +234,10 @@ function CLI() {
 			pipeline = pipeline.then(commandObject => processsor.worker(commandObject) || commandObject);
 		}));
 
-		return pipeline.then(result => this.stopLoading());
+		return pipeline.then(result => {
+			this.stopLoading();
+			this.toggleScroll();
+		});
 	}.bind(this);
 
 	/**
