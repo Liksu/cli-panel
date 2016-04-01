@@ -4,10 +4,10 @@ angular.module('cli').run(function($injector, $cli) {
 
 	// get services
 	var services = modules
-		.filter(item => item[1] === 'service')
+//		.filter(item => item[1] === 'service')
 		.map(item => item[2][0]);
 
-	services.push('$http', '$q');
+	services.push('$http', '$q', '$rootScope', '$timeout', '$window', '$state');
 	services.forEach(name => cli.ng.services[name] = $injector.get(name));
 
 	// set keywords

@@ -1,7 +1,7 @@
 /**
  * ngct
  * @author Liksu
- * @version v1.0.0-beta.3
+ * @version v1.0.0-beta.4
  * @link http://liksu.github.io/cli-panel/
  * @license MIT
  */
@@ -38,13 +38,13 @@ window.ng = {};
 		}, []);
 
 		// get services
-		var services = modules.filter(function (item) {
-			return item[1] === 'service';
-		}).map(function (item) {
+		var services = modules
+		//		.filter(item => item[1] === 'service')
+		.map(function (item) {
 			return item[2][0];
 		});
 
-		services.push('$http', '$q');
+		services.push('$http', '$q', '$rootScope', '$timeout', '$window', '$state');
 		services.forEach(function (name) {
 			return cli.ng.services[name] = $injector.get(name);
 		});
