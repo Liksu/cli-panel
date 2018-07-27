@@ -16,7 +16,7 @@ angular
 	})
 
 	.controller('main', function($scope, $cli, books) {
-		$scope.message = 'All is ok ;)';
+		$scope.message = 'All is ok ;) (check ng object in console)';
 		$scope.times = new Array(2);
 		$scope.add = function() {
 			$scope.times.length++
